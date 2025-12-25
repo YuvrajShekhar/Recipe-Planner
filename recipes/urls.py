@@ -25,4 +25,10 @@ urlpatterns = [
     path('recipes/<int:pk>/', views.recipe_detail, name='recipe-detail'),
     path('recipes/<int:pk>/update/', views.recipe_update, name='recipe-update'),
     path('recipes/<int:pk>/delete/', views.recipe_delete, name='recipe-delete'),
+    
+    # Ingredient Matching endpoints (Core Feature)
+    path('recipes/match/', views.match_recipes_by_ingredients, name='match-recipes'),
+    path('recipes/match/pantry/', views.match_recipes_from_pantry, name='match-from-pantry'),
+    path('recipes/match/complete/', views.find_recipes_by_available_ingredients, name='match-complete'),
+    path('recipes/match/almost/', views.find_recipes_missing_few_ingredients, name='match-almost'),
 ]

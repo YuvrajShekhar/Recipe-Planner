@@ -22,3 +22,10 @@ from .recipe_views import (
     recipe_by_user,
     my_recipes,
 )
+
+from .matching_views import (
+    match_recipes_by_ingredients,
+    match_recipes_from_pantry,
+    find_recipes_by_available_ingredients,
+    find_recipes_missing_few_ingredients,
+)
