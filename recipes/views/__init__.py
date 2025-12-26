@@ -41,3 +41,16 @@ from .pantry_views import (
     pantry_check_ingredient,
     pantry_ingredient_ids,
 )
+
+from .favorite_views import (
+    favorite_list,
+    favorite_add,
+    favorite_toggle,
+    favorite_remove,
+    favorite_remove_by_recipe,
+    favorite_check,
+    favorite_recipe_ids,
+    favorite_clear,
+    favorite_detail,
+    favorites_with_pantry_match,
+)

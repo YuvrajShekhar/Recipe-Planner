@@ -42,4 +42,16 @@ urlpatterns = [
     path('pantry/<int:pk>/', views.pantry_detail, name='pantry-detail'),
     path('pantry/<int:pk>/update/', views.pantry_update, name='pantry-update'),
     path('pantry/<int:pk>/remove/', views.pantry_remove, name='pantry-remove'),
+    
+    # Favorites endpoints
+    path('favorites/', views.favorite_list, name='favorite-list'),
+    path('favorites/add/', views.favorite_add, name='favorite-add'),
+    path('favorites/toggle/', views.favorite_toggle, name='favorite-toggle'),
+    path('favorites/clear/', views.favorite_clear, name='favorite-clear'),
+    path('favorites/recipe-ids/', views.favorite_recipe_ids, name='favorite-recipe-ids'),
+    path('favorites/with-pantry-match/', views.favorites_with_pantry_match, name='favorites-with-pantry'),
+    path('favorites/check/<int:recipe_id>/', views.favorite_check, name='favorite-check'),
+    path('favorites/recipe/<int:recipe_id>/remove/', views.favorite_remove_by_recipe, name='favorite-remove-by-recipe'),
+    path('favorites/<int:pk>/', views.favorite_detail, name='favorite-detail'),
+    path('favorites/<int:pk>/remove/', views.favorite_remove, name='favorite-remove'),
 ]
