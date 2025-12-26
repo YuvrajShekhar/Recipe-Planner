@@ -29,3 +29,15 @@ from .matching_views import (
     find_recipes_by_available_ingredients,
     find_recipes_missing_few_ingredients,
 )
+
+from .pantry_views import (
+    pantry_list,
+    pantry_add,
+    pantry_add_multiple,
+    pantry_detail,
+    pantry_update,
+    pantry_remove,
+    pantry_clear,
+    pantry_check_ingredient,
+    pantry_ingredient_ids,
+)

@@ -31,4 +31,15 @@ urlpatterns = [
     path('recipes/match/pantry/', views.match_recipes_from_pantry, name='match-from-pantry'),
     path('recipes/match/complete/', views.find_recipes_by_available_ingredients, name='match-complete'),
     path('recipes/match/almost/', views.find_recipes_missing_few_ingredients, name='match-almost'),
+    
+    # Pantry endpoints
+    path('pantry/', views.pantry_list, name='pantry-list'),
+    path('pantry/add/', views.pantry_add, name='pantry-add'),
+    path('pantry/add-multiple/', views.pantry_add_multiple, name='pantry-add-multiple'),
+    path('pantry/clear/', views.pantry_clear, name='pantry-clear'),
+    path('pantry/ingredient-ids/', views.pantry_ingredient_ids, name='pantry-ingredient-ids'),
+    path('pantry/check/<int:ingredient_id>/', views.pantry_check_ingredient, name='pantry-check'),
+    path('pantry/<int:pk>/', views.pantry_detail, name='pantry-detail'),
+    path('pantry/<int:pk>/update/', views.pantry_update, name='pantry-update'),
+    path('pantry/<int:pk>/remove/', views.pantry_remove, name='pantry-remove'),
 ]
