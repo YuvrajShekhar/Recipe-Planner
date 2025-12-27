@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Alert } from '../components/common';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -10,22 +11,50 @@ const Register = () => {
         password_confirm: ''
     });
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-    const { register } = useAuth();
+    
+    const { register, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+
+    // Redirect if already logged in
+    React.useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/', { replace: true });
+        }
+    }, [isAuthenticated, navigate]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError('');
+    };
+
+    const validateForm = () => {
+        if (formData.password.length < 8) {
+            setError('Password must be at least 8 characters long');
+            return false;
+        }
+        if (formData.password !== formData.password_confirm) {
+            setError('Passwords do not match');
+            return false;
+        }
+        return true;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        
+        if (!validateForm()) return;
+        
         setLoading(true);
 
         try {
             await register(formData);
-            navigate('/login');
+            setSuccess('Account created successfully! Redirecting to login...');
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
         } catch (err) {
             const errors = err.response?.data?.errors;
             if (errors) {
@@ -43,9 +72,13 @@ const Register = () => {
         <div className="auth-page">
             <div className="auth-card">
                 <h2>Create Account</h2>
-                
-                {error && <div className="alert alert-error">{error}</div>}
-                
+                <p style={{ textAlign: 'center', color: '#666', marginBottom: '25px' }}>
+                    Join RecipePlanner to save your favorites
+                </p>
+
+                {error && <Alert type="error" message={error} />}
+                {success && <Alert type="success" message={success} />}
+
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
@@ -56,10 +89,12 @@ const Register = () => {
                             className="form-control"
                             value={formData.username}
                             onChange={handleChange}
+                            placeholder="Choose a username"
                             required
+                            autoFocus
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label htmlFor="email">Email</label>
                         <input
@@ -69,10 +104,11 @@ const Register = () => {
                             className="form-control"
                             value={formData.email}
                             onChange={handleChange}
+                            placeholder="Enter your email"
                             required
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
                         <input
@@ -82,11 +118,12 @@ const Register = () => {
                             className="form-control"
                             value={formData.password}
                             onChange={handleChange}
+                            placeholder="Create a password (min 8 characters)"
                             required
                             minLength="8"
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label htmlFor="password_confirm">Confirm Password</label>
                         <input
@@ -96,19 +133,20 @@ const Register = () => {
                             className="form-control"
                             value={formData.password_confirm}
                             onChange={handleChange}
+                            placeholder="Confirm your password"
                             required
                         />
                     </div>
-                    
-                    <button 
-                        type="submit" 
+
+                    <button
+                        type="submit"
                         className="btn btn-primary"
-                        disabled={loading}
+                        disabled={loading || success}
                     >
                         {loading ? 'Creating Account...' : 'Sign Up'}
                     </button>
                 </form>
-                
+
                 <div className="auth-footer">
                     Already have an account? <Link to="/login">Login</Link>
                 </div>

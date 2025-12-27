@@ -6,6 +6,9 @@ import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 
+// Common Components
+import { ProtectedRoute } from './components/common';
+
 // Pages
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -26,15 +29,41 @@ function App() {
                     <Navbar />
                     <main className="page">
                         <Routes>
+                            {/* Public Routes */}
                             <Route path="/" element={<Home />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
                             <Route path="/recipes" element={<Recipes />} />
                             <Route path="/recipes/:id" element={<RecipeDetail />} />
                             <Route path="/match" element={<IngredientMatch />} />
-                            <Route path="/pantry" element={<Pantry />} />
-                            <Route path="/favorites" element={<Favorites />} />
-                            <Route path="/profile" element={<Profile />} />
+                            
+                            {/* Protected Routes */}
+                            <Route 
+                                path="/pantry" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Pantry />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/favorites" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Favorites />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            <Route 
+                                path="/profile" 
+                                element={
+                                    <ProtectedRoute>
+                                        <Profile />
+                                    </ProtectedRoute>
+                                } 
+                            />
+                            
+                            {/* 404 Route */}
                             <Route path="*" element={<NotFound />} />
                         </Routes>
                     </main>
