@@ -75,7 +75,7 @@ The Smart Recipe & Meal Planning Platform flips the traditional recipe search on
 - **Version Control**: Git & GitHub
 - **API Testing**: Postman
 - **Containerization**: Docker & Docker Compose
-- **Cloud Hosting**: [Your cloud provider]
+- **Cloud Hosting**: 
 
 ## System Architecture
 
