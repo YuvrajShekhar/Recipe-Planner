@@ -1,30 +1,18 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { PageHeader } from '../components/common';
 
 const Favorites = () => {
-    const { isAuthenticated } = useAuth();
-
-    if (!isAuthenticated) {
-        return (
-            <div className="container">
-                <div className="empty-state">
-                    <div className="empty-state-icon">🔒</div>
-                    <h3>Login Required</h3>
-                    <p>Please login to view your favorites</p>
-                    <Link to="/login" className="btn btn-primary">Login</Link>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="container">
-            <div className="page-header">
-                <h1>My Favorites</h1>
-                <p>Your saved recipes</p>
+            <PageHeader 
+                title="My Favorites" 
+                subtitle="Your saved recipes"
+            />
+            <div className="card">
+                <div className="card-body">
+                    <p>Favorites list coming soon...</p>
+                </div>
             </div>
-            <p>Favorites list coming soon...</p>
         </div>
     );
 };
