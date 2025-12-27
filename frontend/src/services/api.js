@@ -33,13 +33,18 @@ export const ingredientAPI = {
 // ==================== RECIPE APIs ====================
 
 export const recipeAPI = {
-    getAll: (params) => API.get('/recipes/', { params }),
+    getAll: (params = {}) => {
+        // Convert limit to the API format if needed
+        const apiParams = { ...params };
+        return API.get('/recipes/', { params: apiParams });
+    },
     getById: (id) => API.get(`/recipes/${id}/`),
     create: (data) => API.post('/recipes/create/', data),
     update: (id, data) => API.put(`/recipes/${id}/update/`, data),
     delete: (id) => API.delete(`/recipes/${id}/delete/`),
     getMyRecipes: () => API.get('/recipes/my-recipes/'),
     getByUser: (userId) => API.get(`/recipes/user/${userId}/`),
+    search: (query) => API.get('/recipes/', { params: { search: query } }),
 };
 
 // ==================== MATCHING APIs ====================
