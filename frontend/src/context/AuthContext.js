@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
@@ -6,59 +6,91 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     // Check if user is logged in on app load
-    useEffect(() => {
-        checkAuth();
-    }, []);
-
-    const checkAuth = async () => {
+    const checkAuth = useCallback(async () => {
         try {
+            setLoading(true);
             const response = await authAPI.getProfile();
             setUser(response.data.user);
-        } catch (error) {
+            setError(null);
+        } catch (err) {
             setUser(null);
+            // Don't set error for 403 (not authenticated) - that's expected
+            if (err.response?.status !== 403) {
+                setError(err.message);
+            }
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        checkAuth();
+    }, [checkAuth]);
 
     const login = async (credentials) => {
-        const response = await authAPI.login(credentials);
-        setUser(response.data.user);
-        return response.data;
+        try {
+            setError(null);
+            const response = await authAPI.login(credentials);
+            setUser(response.data.user);
+            return response.data;
+        } catch (err) {
+            setError(err.response?.data?.message || 'Login failed');
+            throw err;
+        }
     };
 
     const register = async (userData) => {
-        const response = await authAPI.register(userData);
-        return response.data;
+        try {
+            setError(null);
+            const response = await authAPI.register(userData);
+            return response.data;
+        } catch (err) {
+            setError(err.response?.data?.message || 'Registration failed');
+            throw err;
+        }
     };
 
     const logout = async () => {
         try {
             await authAPI.logout();
-        } catch (error) {
-            console.error('Logout error:', error);
+        } catch (err) {
+            console.error('Logout error:', err);
         } finally {
             setUser(null);
+            setError(null);
         }
     };
 
     const updateProfile = async (data) => {
-        const response = await authAPI.updateProfile(data);
-        setUser(response.data.user);
-        return response.data;
+        try {
+            setError(null);
+            const response = await authAPI.updateProfile(data);
+            setUser(response.data.user);
+            return response.data;
+        } catch (err) {
+            setError(err.response?.data?.message || 'Profile update failed');
+            throw err;
+        }
+    };
+
+    const clearError = () => {
+        setError(null);
     };
 
     const value = {
         user,
         loading,
+        error,
         isAuthenticated: !!user,
         login,
         register,
         logout,
         updateProfile,
         checkAuth,
+        clearError,
     };
 
     return (
