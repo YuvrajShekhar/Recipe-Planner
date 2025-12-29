@@ -15,6 +15,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Recipes from './pages/Recipes';
 import RecipeDetail from './pages/RecipeDetail';
+import RecipeEdit from './pages/RecipeEdit';
 import IngredientMatch from './pages/IngredientMatch';
 import Pantry from './pages/Pantry';
 import Favorites from './pages/Favorites';
@@ -38,6 +39,14 @@ function App() {
                             <Route path="/match" element={<IngredientMatch />} />
                             
                             {/* Protected Routes */}
+                            <Route 
+                                path="/recipes/:id/edit" 
+                                element={
+                                    <ProtectedRoute>
+                                        <RecipeEdit />
+                                    </ProtectedRoute>
+                                } 
+                            />
                             <Route 
                                 path="/pantry" 
                                 element={
