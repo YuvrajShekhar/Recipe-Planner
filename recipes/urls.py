@@ -54,4 +54,12 @@ urlpatterns = [
     path('favorites/recipe/<int:recipe_id>/remove/', views.favorite_remove_by_recipe, name='favorite-remove-by-recipe'),
     path('favorites/<int:pk>/', views.favorite_detail, name='favorite-detail'),
     path('favorites/<int:pk>/remove/', views.favorite_remove, name='favorite-remove'),
+
+    # Nutrition endpoints
+    path('nutrition/', views.ingredient_nutrition_list, name='nutrition-list'),
+    path('nutrition/create/', views.ingredient_nutrition_create, name='nutrition-create'),
+    path('nutrition/ingredient/<int:ingredient_id>/', views.ingredient_nutrition_detail, name='nutrition-detail'),
+    path('nutrition/ingredient/<int:ingredient_id>/update/', views.ingredient_nutrition_update, name='nutrition-update'),
+    path('nutrition/ingredient/<int:ingredient_id>/delete/', views.ingredient_nutrition_delete, name='nutrition-delete'),
+    path('recipes/<int:recipe_id>/nutrition/', views.recipe_nutrition, name='recipe-nutrition'),
 ]

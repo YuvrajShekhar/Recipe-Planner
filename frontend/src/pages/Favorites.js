@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { favoritesAPI } from '../services/api';
 import { FavoriteCard } from '../components/favorites';
 import { Loading, Alert, PageHeader, EmptyState, ConfirmModal } from '../components/common';
+import { useDocumentTitle } from '../hooks';
 
 const Favorites = () => {
+    useDocumentTitle('My Favorites');
     const { user } = useAuth();
 
     // Favorites state

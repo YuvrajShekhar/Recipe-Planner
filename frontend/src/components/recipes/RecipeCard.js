@@ -10,7 +10,7 @@ const RecipeCard = ({ recipe, onFavoriteToggle, showMatchPercentage = false }) =
 
     const getDefaultImage = (title) => {
         const lowerTitle = title?.toLowerCase() || '';
-        
+
         if (lowerTitle.includes('chicken')) {
             return 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&h=300&fit=crop';
         }
@@ -35,7 +35,7 @@ const RecipeCard = ({ recipe, onFavoriteToggle, showMatchPercentage = false }) =
         if (lowerTitle.includes('garlic') || lowerTitle.includes('lemon')) {
             return 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400&h=300&fit=crop';
         }
-        
+
         // Default food image
         return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop';
     };
@@ -71,6 +71,14 @@ const RecipeCard = ({ recipe, onFavoriteToggle, showMatchPercentage = false }) =
         }
     };
 
+    const getPreferenceClass = (preference) => {
+        switch (preference) {
+            case 'veg': return 'preference-veg';
+            case 'nonveg': return 'preference-nonveg';
+            default: return '';
+        }
+    };
+
     const getMatchClass = (percentage) => {
         if (percentage >= 80) return 'match-high';
         if (percentage >= 50) return 'match-medium';
@@ -82,14 +90,14 @@ const RecipeCard = ({ recipe, onFavoriteToggle, showMatchPercentage = false }) =
     return (
         <Link to={`/recipes/${recipe.id}`} className="recipe-card card">
             <div className="recipe-card-image">
-                <img 
-                    src={recipe.image_url || defaultImage} 
+                <img
+                    src={recipe.image_url || defaultImage}
                     alt={recipe.title}
                     onError={(e) => {
                         e.target.src = defaultImage;
                     }}
                 />
-                
+
                 {isAuthenticated && (
                     <button
                         className={`favorite-btn ${isFavorited ? 'active' : ''}`}
@@ -110,10 +118,10 @@ const RecipeCard = ({ recipe, onFavoriteToggle, showMatchPercentage = false }) =
 
             <div className="card-body">
                 <h3 className="recipe-card-title">{recipe.title}</h3>
-                
+
                 <p className="recipe-card-description">
-                    {recipe.description?.length > 80 
-                        ? `${recipe.description.substring(0, 80)}...` 
+                    {recipe.description?.length > 80
+                        ? `${recipe.description.substring(0, 80)}...`
                         : recipe.description || 'A delicious recipe to try!'
                     }
                 </p>

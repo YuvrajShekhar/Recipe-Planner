@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { PageHeader, Alert, ConfirmModal } from '../components/common';
 import { pantryAPI, favoritesAPI } from '../services/api';
+import { useDocumentTitle } from '../hooks';
 
 const Profile = () => {
+    useDocumentTitle('Find Recipes by Ingredients');
     const { user, logout, updateProfile } = useAuth();
     const navigate = useNavigate();
 

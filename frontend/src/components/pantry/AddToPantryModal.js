@@ -7,7 +7,7 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [categories, setCategories] = useState([]);
-    
+
     // Selected ingredients to add
     const [selectedIngredients, setSelectedIngredients] = useState([]);
     const [addingLoading, setAddingLoading] = useState(false);
@@ -38,12 +38,8 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
         try {
             const response = await ingredientAPI.getCategories();
             const rawCategories = response.data.categories || [];
-            const processedCategories = rawCategories.map(cat => {
-                if (Array.isArray(cat)) {
-                    return cat[0];
-                }
-                return cat;
-            });
+            // Extract the 'value' property from each category object
+            const processedCategories = rawCategories.map(cat => cat.value);
             setCategories(processedCategories);
         } catch (err) {
             console.error('Error loading categories:', err);
@@ -71,15 +67,15 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
             setSelectedIngredients(selectedIngredients.filter(item => item.ingredient_id !== ingredient.id));
         } else {
             setSelectedIngredients([
-                ...selectedIngredients, 
+                ...selectedIngredients,
                 { ingredient_id: ingredient.id, name: ingredient.name, quantity: null }
             ]);
         }
     };
 
     const updateQuantity = (ingredientId, quantity) => {
-        setSelectedIngredients(selectedIngredients.map(item => 
-            item.ingredient_id === ingredientId 
+        setSelectedIngredients(selectedIngredients.map(item =>
+            item.ingredient_id === ingredientId
                 ? { ...item, quantity: quantity ? parseFloat(quantity) : null }
                 : item
         ));
@@ -87,7 +83,7 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
 
     const handleAdd = async () => {
         if (selectedIngredients.length === 0) return;
-        
+
         setAddingLoading(true);
         try {
             await onAdd(selectedIngredients);
@@ -174,7 +170,7 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
                                             step="0.01"
                                             min="0"
                                         />
-                                        <button 
+                                        <button
                                             className="remove-btn"
                                             onClick={() => toggleIngredient({ id: item.ingredient_id })}
                                         >
@@ -200,7 +196,6 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
                                     className={`ingredient-btn-modal ${isSelected(ing.id) ? 'selected' : ''}`}
                                     onClick={() => toggleIngredient(ing)}
                                 >
-                                    <span className="ing-icon">{getCategoryIcon(ing.category)}</span>
                                     <span className="ing-name">{ing.name}</span>
                                     {isSelected(ing.id) && <span className="check">✓</span>}
                                 </button>
@@ -221,7 +216,7 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
                     <button className="btn btn-secondary" onClick={onClose}>
                         Cancel
                     </button>
-                    <button 
+                    <button
                         className="btn btn-primary"
                         onClick={handleAdd}
                         disabled={selectedIngredients.length === 0 || addingLoading}

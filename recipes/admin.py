@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite
+from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition 
 
 
 @admin.register(Ingredient)
@@ -8,6 +8,7 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = ('category',)
     search_fields = ('name',)
     ordering = ('name',)
+    search_fields = ['name']
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -19,15 +20,15 @@ class RecipeIngredientInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_by', 'difficulty', 'prep_time', 'cook_time', 'created_at')
-    list_filter = ('difficulty', 'created_at')
+    list_display = ('title', 'created_by', 'difficulty', 'preference', 'prep_time', 'cook_time', 'created_at')
+    list_filter = ('difficulty', 'preference', 'created_at')
     search_fields = ('title', 'description')
     ordering = ('-created_at',)
     inlines = [RecipeIngredientInline]
     
     fieldsets = (
         ('Basic Info', {
-            'fields': ('title', 'description', 'image_url')
+            'fields': ('title', 'description', 'image_url', 'preference')
         }),
         ('Cooking Details', {
             'fields': ('instructions', 'prep_time', 'cook_time', 'servings', 'difficulty')
@@ -59,3 +60,12 @@ class FavoriteAdmin(admin.ModelAdmin):
     list_filter = ('user', 'saved_at')
     search_fields = ('user__username', 'recipe__title')
     ordering = ('-saved_at',)
+
+@admin.register(IngredientNutrition)
+class IngredientNutritionAdmin(admin.ModelAdmin):
+    list_display = ['ingredient', 'unit_type', 'calories_per_100g', 'calories_per_unit', 'protein_per_100g', 'carbs_per_100g', 'fat_per_100g']
+    list_filter = ['unit_type']
+    search_fields = ['ingredient__name']
+    autocomplete_fields = ['ingredient']
+
+    

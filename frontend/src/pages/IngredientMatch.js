@@ -5,8 +5,10 @@ import { matchingAPI, pantryAPI } from '../services/api';
 import { IngredientSelector } from '../components/ingredients';
 import { MatchResultCard } from '../components/recipes';
 import { Loading, Alert, PageHeader, EmptyState } from '../components/common';
+import { useDocumentTitle } from '../hooks';
 
 const IngredientMatch = () => {
+    useDocumentTitle('Find Recipes by Ingredients');
     const { isAuthenticated } = useAuth();
 
     // Selected ingredients state

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { recipeAPI, favoritesAPI, pantryAPI } from '../services/api';
 import { Loading, Alert, ConfirmModal } from '../components/common';
+import NutritionCard from '../components/recipes/NutritionCard';
 
 const RecipeDetail = () => {
     const { id } = useParams();
@@ -106,7 +107,7 @@ const RecipeDetail = () => {
 
     const getDefaultImage = (title) => {
         const lowerTitle = title?.toLowerCase() || '';
-        
+
         if (lowerTitle.includes('chicken')) {
             return 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&h=500&fit=crop';
         }
@@ -119,7 +120,7 @@ const RecipeDetail = () => {
         if (lowerTitle.includes('tomato')) {
             return 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?w=800&h=500&fit=crop';
         }
-        
+
         return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=500&fit=crop';
     };
 
@@ -184,14 +185,14 @@ const RecipeDetail = () => {
                 {/* Recipe Header */}
                 <div className="recipe-detail-header">
                     <div className="recipe-detail-image">
-                        <img 
-                            src={recipe.image_url || getDefaultImage(recipe.title)} 
+                        <img
+                            src={recipe.image_url || getDefaultImage(recipe.title)}
                             alt={recipe.title}
                             onError={(e) => {
                                 e.target.src = getDefaultImage(recipe.title);
                             }}
                         />
-                        
+
                         {/* Favorite Button */}
                         <button
                             className={`favorite-btn-large ${isFavorited ? 'active' : ''}`}
@@ -207,13 +208,13 @@ const RecipeDetail = () => {
                             <h1>{recipe.title}</h1>
                             {isOwner && (
                                 <div className="owner-actions">
-                                    <Link 
-                                        to={`/recipes/${recipe.id}/edit`} 
+                                    <Link
+                                        to={`/recipes/${recipe.id}/edit`}
                                         className="btn btn-small btn-outline"
                                     >
                                         ✏️ Edit
                                     </Link>
-                                    <button 
+                                    <button
                                         className="btn btn-small btn-danger"
                                         onClick={() => setShowDeleteModal(true)}
                                     >
@@ -267,10 +268,9 @@ const RecipeDetail = () => {
                             </span>
 
                             {isAuthenticated && !pantryLoading && (
-                                <span className={`match-badge ${
-                                    matchPercentage >= 80 ? 'match-high' : 
-                                    matchPercentage >= 50 ? 'match-medium' : 'match-low'
-                                }`}>
+                                <span className={`match-badge ${matchPercentage >= 80 ? 'match-high' :
+                                        matchPercentage >= 50 ? 'match-medium' : 'match-low'
+                                    }`}>
                                     {matchPercentage}% pantry match
                                 </span>
                             )}
@@ -286,6 +286,10 @@ const RecipeDetail = () => {
 
                 {/* Recipe Content */}
                 <div className="recipe-detail-content">
+                    {/* Nutrition Section */}
+                    <div className="recipe-section nutrition-section">
+                        <NutritionCard recipeId={recipe.id} />
+                    </div>
                     {/* Ingredients Section */}
                     <div className="recipe-section ingredients-section">
                         <h2>🥗 Ingredients</h2>
@@ -312,7 +316,7 @@ const RecipeDetail = () => {
                                             {ri.ingredient.name}
                                         </span>
                                     </div>
-                                    
+
                                     {isAuthenticated && !isInPantry(ri.ingredient.id) && (
                                         <button
                                             className="btn btn-small btn-outline add-to-pantry-btn"

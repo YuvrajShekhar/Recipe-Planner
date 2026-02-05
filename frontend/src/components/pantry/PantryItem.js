@@ -62,10 +62,6 @@ const PantryItem = ({ item, onUpdate, onRemove }) => {
 
     return (
         <div className={`pantry-item ${loading ? 'loading' : ''}`}>
-            <div className="pantry-item-icon">
-                {getCategoryIcon(item.ingredient?.category)}
-            </div>
-
             <div className="pantry-item-info">
                 <h4 className="pantry-item-name">{item.ingredient?.name}</h4>
                 <span className="pantry-item-category">
@@ -89,7 +85,7 @@ const PantryItem = ({ item, onUpdate, onRemove }) => {
                         <span className="unit">{item.ingredient?.unit}</span>
                     </div>
                 ) : (
-                    <div 
+                    <div
                         className="quantity-display"
                         onClick={() => setIsEditing(true)}
                         title="Click to edit quantity"
@@ -114,14 +110,14 @@ const PantryItem = ({ item, onUpdate, onRemove }) => {
             <div className="pantry-item-actions">
                 {isEditing ? (
                     <>
-                        <button 
+                        <button
                             className="btn btn-small btn-success"
                             onClick={handleSave}
                             disabled={loading}
                         >
                             ✓
                         </button>
-                        <button 
+                        <button
                             className="btn btn-small btn-secondary"
                             onClick={() => {
                                 setQuantity(item.quantity || '');
@@ -132,7 +128,7 @@ const PantryItem = ({ item, onUpdate, onRemove }) => {
                         </button>
                     </>
                 ) : (
-                    <button 
+                    <button
                         className="btn btn-small btn-danger"
                         onClick={handleRemove}
                         disabled={loading}

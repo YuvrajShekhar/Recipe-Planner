@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite
+from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -72,7 +72,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'prep_time', 'cook_time',
             'total_time', 'servings', 'difficulty', 'image_url',
-            'created_by', 'created_at', 'ingredient_count'
+            'created_by', 'created_at', 'ingredient_count', 'preference'
         ]
     
     def get_ingredient_count(self, obj):
@@ -93,7 +93,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'instructions', 'prep_time',
             'cook_time', 'total_time', 'servings', 'difficulty', 'image_url',
             'created_by', 'created_at', 'updated_at', 'recipe_ingredients',
-            'is_favorited'
+            'is_favorited', 'preference'
         ]
     
     def get_is_favorited(self, obj):
@@ -116,8 +116,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = [
             'id', 'title', 'description', 'instructions', 'prep_time',
-            'cook_time', 'servings', 'difficulty', 'image_url', 'ingredients'
-        ]
+            'cook_time', 'servings', 'difficulty', 'image_url', 'ingredients', 'preference'
+            ]
     
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients', [])
@@ -200,5 +200,50 @@ class RecipeMatchSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'prep_time', 'cook_time',
             'total_time', 'servings', 'difficulty', 'image_url',
             'created_by', 'match_percentage', 'matched_ingredients',
-            'missing_ingredients'
+            'missing_ingredients', 'preference'
         ]
+
+class IngredientNutritionSerializer(serializers.ModelSerializer):
+    ingredient_name = serializers.CharField(source='ingredient.name', read_only=True)
+    
+    class Meta:
+        model = IngredientNutrition
+        fields = [
+            'id',
+            'ingredient',
+            'ingredient_name',
+            'calories_per_100g',
+            'protein_per_100g',
+            'carbs_per_100g',
+            'fat_per_100g',
+            'fiber_per_100g',
+            'calories_per_unit',
+            'protein_per_unit',
+            'carbs_per_unit',
+            'fat_per_unit',
+            'fiber_per_unit',
+            'unit_type',
+            'gram_equivalent_per_cup',
+            'gram_equivalent_per_tbsp',
+            'gram_equivalent_per_tsp',
+            'gram_equivalent_per_piece',
+        ]
+
+
+class RecipeNutritionSerializer(serializers.Serializer):
+    """Serializer for calculated recipe nutrition"""
+    total_calories = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_protein = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_carbs = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_fat = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_fiber = serializers.DecimalField(max_digits=10, decimal_places=2)
+    calories_per_serving = serializers.DecimalField(max_digits=10, decimal_places=2)
+    protein_per_serving = serializers.DecimalField(max_digits=10, decimal_places=2)
+    carbs_per_serving = serializers.DecimalField(max_digits=10, decimal_places=2)
+    fat_per_serving = serializers.DecimalField(max_digits=10, decimal_places=2)
+    fiber_per_serving = serializers.DecimalField(max_digits=10, decimal_places=2)
+    servings = serializers.IntegerField()
+    protein_percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
+    carbs_percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
+    fat_percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
+    ingredients_without_nutrition = serializers.ListField(child=serializers.CharField())

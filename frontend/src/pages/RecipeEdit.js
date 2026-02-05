@@ -21,7 +21,9 @@ const RecipeEdit = () => {
         prep_time: '',
         cook_time: '',
         servings: '',
+        servings: '',
         difficulty: 'medium',
+        preference: 'veg',
         image_url: '',
     });
 
@@ -36,14 +38,14 @@ const RecipeEdit = () => {
     const loadData = async () => {
         try {
             setLoading(true);
-            
+
             const [recipeRes, ingredientsRes] = await Promise.all([
                 recipeAPI.getById(id),
                 ingredientAPI.getAll()
             ]);
 
             const recipe = recipeRes.data.recipe;
-            
+
             // Check ownership
             if (recipe.created_by?.id !== user?.id) {
                 navigate('/recipes');
@@ -57,7 +59,9 @@ const RecipeEdit = () => {
                 prep_time: recipe.prep_time || '',
                 cook_time: recipe.cook_time || '',
                 servings: recipe.servings || '',
+                servings: recipe.servings || '',
                 difficulty: recipe.difficulty || 'medium',
+                preference: recipe.preference || 'veg',
                 image_url: recipe.image_url || '',
             });
 
@@ -125,7 +129,7 @@ const RecipeEdit = () => {
 
             await recipeAPI.update(id, payload);
             setSuccess('Recipe updated successfully!');
-            
+
             setTimeout(() => {
                 navigate(`/recipes/${id}`);
             }, 1500);
@@ -148,8 +152,8 @@ const RecipeEdit = () => {
 
     return (
         <div className="container">
-            <PageHeader 
-                title="Edit Recipe" 
+            <PageHeader
+                title="Edit Recipe"
                 subtitle={`Editing: ${formData.title}`}
             />
 
@@ -161,7 +165,7 @@ const RecipeEdit = () => {
                     {/* Basic Info */}
                     <div className="form-section">
                         <h3>Basic Information</h3>
-                        
+
                         <div className="form-group">
                             <label htmlFor="title">Recipe Title *</label>
                             <input
@@ -204,7 +208,7 @@ const RecipeEdit = () => {
                     {/* Time & Servings */}
                     <div className="form-section">
                         <h3>Time & Servings</h3>
-                        
+
                         <div className="form-row">
                             <div className="form-group">
                                 <label htmlFor="prep_time">Prep Time (min) *</label>
@@ -265,6 +269,21 @@ const RecipeEdit = () => {
                                     <option value="hard">Hard</option>
                                 </select>
                             </div>
+
+                            <div className="form-group">
+                                <label htmlFor="preference">Preference *</label>
+                                <select
+                                    id="preference"
+                                    name="preference"
+                                    className="form-control"
+                                    value={formData.preference}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="veg">Veg</option>
+                                    <option value="nonveg">Non Veg</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -273,8 +292,8 @@ const RecipeEdit = () => {
                 <div className="form-section">
                     <div className="section-header-flex">
                         <h3>Ingredients</h3>
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             className="btn btn-small btn-secondary"
                             onClick={addIngredient}
                         >
@@ -297,7 +316,7 @@ const RecipeEdit = () => {
                                         </option>
                                     ))}
                                 </select>
-                                
+
                                 <input
                                     type="number"
                                     className="form-control"
@@ -307,7 +326,7 @@ const RecipeEdit = () => {
                                     step="0.01"
                                     min="0"
                                 />
-                                
+
                                 <input
                                     type="text"
                                     className="form-control"
@@ -315,7 +334,7 @@ const RecipeEdit = () => {
                                     value={ri.unit}
                                     onChange={(e) => handleIngredientChange(index, 'unit', e.target.value)}
                                 />
-                                
+
                                 <button
                                     type="button"
                                     className="btn btn-small btn-danger"
@@ -355,15 +374,15 @@ const RecipeEdit = () => {
 
                 {/* Actions */}
                 <div className="form-actions">
-                    <button 
-                        type="button" 
+                    <button
+                        type="button"
                         className="btn btn-outline"
                         onClick={() => navigate(`/recipes/${id}`)}
                     >
                         Cancel
                     </button>
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         className="btn btn-primary"
                         disabled={saving}
                     >

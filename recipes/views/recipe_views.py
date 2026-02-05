@@ -35,6 +35,11 @@ def recipe_list(request):
     difficulty = request.query_params.get('difficulty', None)
     if difficulty:
         recipes = recipes.filter(difficulty=difficulty)
+
+    # Filter by preference
+    preference = request.query_params.get('preference', None)
+    if preference:
+        recipes = recipes.filter(preference=preference)
     
     # Filter by max total time (prep + cook)
     max_time = request.query_params.get('max_time', None)

@@ -3,20 +3,23 @@ import { useSearchParams } from 'react-router-dom';
 import { recipeAPI } from '../services/api';
 import { RecipeCard } from '../components/recipes';
 import { Loading, Alert, PageHeader, EmptyState } from '../components/common';
+import { useDocumentTitle } from '../hooks';
 
 const Recipes = () => {
+    useDocumentTitle('Browse Recipes');
     const [searchParams, setSearchParams] = useSearchParams();
-    
+
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    
+
     // Filters
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const [difficulty, setDifficulty] = useState(searchParams.get('difficulty') || '');
+    const [preference, setPreference] = useState(searchParams.get('preference') || '');
     const [maxTime, setMaxTime] = useState(searchParams.get('max_time') || '');
     const [ordering, setOrdering] = useState(searchParams.get('ordering') || '-created_at');
-    
+
     // Pagination
     const [totalCount, setTotalCount] = useState(0);
 
@@ -28,6 +31,7 @@ const Recipes = () => {
             const params = {};
             if (searchQuery.trim()) params.search = searchQuery.trim();
             if (difficulty) params.difficulty = difficulty;
+            if (preference) params.preference = preference;
             if (maxTime) params.max_time = maxTime;
             if (ordering) params.ordering = ordering;
 
@@ -41,7 +45,7 @@ const Recipes = () => {
         } finally {
             setLoading(false);
         }
-    }, [searchQuery, difficulty, maxTime, ordering]);
+    }, [searchQuery, difficulty, preference, maxTime, ordering]);
 
     useEffect(() => {
         loadRecipes();
@@ -52,11 +56,12 @@ const Recipes = () => {
         const params = new URLSearchParams();
         if (searchQuery) params.set('search', searchQuery);
         if (difficulty) params.set('difficulty', difficulty);
+        if (preference) params.set('preference', preference);
         if (maxTime) params.set('max_time', maxTime);
         if (ordering !== '-created_at') params.set('ordering', ordering);
-        
+
         setSearchParams(params, { replace: true });
-    }, [searchQuery, difficulty, maxTime, ordering, setSearchParams]);
+    }, [searchQuery, difficulty, preference, maxTime, ordering, setSearchParams]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -66,23 +71,24 @@ const Recipes = () => {
     const handleClearFilters = () => {
         setSearchQuery('');
         setDifficulty('');
+        setPreference('');
         setMaxTime('');
         setOrdering('-created_at');
     };
 
     const handleFavoriteToggle = (recipeId, isFavorited) => {
-        setRecipes(prev => 
+        setRecipes(prev =>
             prev.map(r => r.id === recipeId ? { ...r, is_favorited: isFavorited } : r)
         );
     };
 
-    const hasActiveFilters = searchQuery || difficulty || maxTime || ordering !== '-created_at';
+    const hasActiveFilters = searchQuery || difficulty || preference || maxTime || ordering !== '-created_at';
 
     return (
         <div className="recipes-page">
             <div className="container">
-                <PageHeader 
-                    title="All Recipes" 
+                <PageHeader
+                    title="All Recipes"
                     subtitle={`${totalCount} delicious recipes to explore`}
                 />
 
@@ -99,8 +105,8 @@ const Recipes = () => {
                                 className="search-input"
                             />
                             {searchQuery && (
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className="clear-search"
                                     onClick={() => setSearchQuery('')}
                                 >
@@ -126,6 +132,20 @@ const Recipes = () => {
                                 <option value="easy">Easy</option>
                                 <option value="medium">Medium</option>
                                 <option value="hard">Hard</option>
+                            </select>
+                        </div>
+
+                        <div className="filter-group">
+                            <label htmlFor="preference">Preference</label>
+                            <select
+                                id="preference"
+                                value={preference}
+                                onChange={(e) => setPreference(e.target.value)}
+                                className="filter-select"
+                            >
+                                <option value="">All</option>
+                                <option value="veg">Veg</option>
+                                <option value="nonveg">Non Veg</option>
                             </select>
                         </div>
 
@@ -166,7 +186,7 @@ const Recipes = () => {
                         </div>
 
                         {hasActiveFilters && (
-                            <button 
+                            <button
                                 className="btn btn-outline btn-small clear-filters"
                                 onClick={handleClearFilters}
                             >
@@ -190,6 +210,12 @@ const Recipes = () => {
                             <span className="filter-tag">
                                 Difficulty: {difficulty}
                                 <button onClick={() => setDifficulty('')}>✕</button>
+                            </span>
+                        )}
+                        {preference && (
+                            <span className="filter-tag">
+                                Preference: {preference === 'veg' ? 'Veg' : 'Non Veg'}
+                                <button onClick={() => setPreference('')}>✕</button>
                             </span>
                         )}
                         {maxTime && (
@@ -217,8 +243,8 @@ const Recipes = () => {
                         {/* Recipes Grid */}
                         <div className="recipes-grid grid grid-3">
                             {recipes.map(recipe => (
-                                <RecipeCard 
-                                    key={recipe.id} 
+                                <RecipeCard
+                                    key={recipe.id}
                                     recipe={recipe}
                                     onFavoriteToggle={handleFavoriteToggle}
                                 />
@@ -230,7 +256,7 @@ const Recipes = () => {
                         icon="🍳"
                         title="No recipes found"
                         message={
-                            hasActiveFilters 
+                            hasActiveFilters
                                 ? "Try adjusting your filters or search query"
                                 : "No recipes available yet. Check back later!"
                         }

@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { recipeAPI, ingredientAPI } from '../services/api';
 import { RecipeCard } from '../components/recipes';
 import { Loading, Alert } from '../components/common';
+import { useDocumentTitle } from '../hooks';
 
 const Home = () => {
+    useDocumentTitle('Home - Find Recipes with Your Ingredients');
     const { isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
 

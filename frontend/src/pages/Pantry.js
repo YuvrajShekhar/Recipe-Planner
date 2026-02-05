@@ -4,10 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { pantryAPI } from '../services/api';
 import { PantryItem, AddToPantryModal } from '../components/pantry';
 import { Loading, Alert, PageHeader, EmptyState, ConfirmModal } from '../components/common';
+import { useDocumentTitle } from '../hooks';
 
 const Pantry = () => {
-    const { user } = useAuth();
-
+    useDocumentTitle('My Pantry');
+    const { isAuthenticated } = useAuth();
     // Pantry state
     const [pantryItems, setPantryItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -53,7 +54,7 @@ const Pantry = () => {
             const matchesSearch = item.ingredient?.name
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase());
-            const matchesCategory = selectedCategory === 'all' || 
+            const matchesCategory = selectedCategory === 'all' ||
                 item.ingredient?.category === selectedCategory;
             return matchesSearch && matchesCategory;
         });
@@ -88,11 +89,11 @@ const Pantry = () => {
                 ingredient_id: ing.ingredient_id,
                 quantity: ing.quantity
             }));
-            
+
             await pantryAPI.addMultiple(formattedIngredients);
             setSuccess(`Added ${ingredients.length} ingredient${ingredients.length !== 1 ? 's' : ''} to pantry`);
             loadPantry();
-            
+
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
             console.error('Error adding ingredients:', err);
@@ -103,7 +104,7 @@ const Pantry = () => {
     const handleUpdateItem = async (itemId, quantity) => {
         try {
             await pantryAPI.update(itemId, quantity);
-            setPantryItems(pantryItems.map(item => 
+            setPantryItems(pantryItems.map(item =>
                 item.id === itemId ? { ...item, quantity } : item
             ));
             setSuccess('Quantity updated');
@@ -169,11 +170,11 @@ const Pantry = () => {
     return (
         <div className="pantry-page">
             <div className="container">
-                <PageHeader 
-                    title="My Pantry" 
+                <PageHeader
+                    title="My Pantry"
                     subtitle={`${pantryItems.length} ingredient${pantryItems.length !== 1 ? 's' : ''} in your pantry`}
                 >
-                    <button 
+                    <button
                         className="btn btn-primary"
                         onClick={() => setShowAddModal(true)}
                     >
@@ -238,7 +239,7 @@ const Pantry = () => {
                                     className="search-input"
                                 />
                                 {searchQuery && (
-                                    <button 
+                                    <button
                                         className="clear-search"
                                         onClick={() => setSearchQuery('')}
                                     >
@@ -260,13 +261,13 @@ const Pantry = () => {
                                         className={`filter-btn ${selectedCategory === cat ? 'active' : ''}`}
                                         onClick={() => setSelectedCategory(cat)}
                                     >
-                                        {getCategoryIcon(cat)} {getCategoryLabel(cat)} ({categorySummary[cat] || 0})
+                                        {getCategoryLabel(cat)} ({categorySummary[cat] || 0})
                                     </button>
                                 ))}
                             </div>
 
                             {pantryItems.length > 0 && (
-                                <button 
+                                <button
                                     className="btn btn-outline btn-small btn-danger-outline"
                                     onClick={() => setShowClearModal(true)}
                                 >
@@ -280,7 +281,7 @@ const Pantry = () => {
                             {filteredItems.length === 0 ? (
                                 <div className="no-results-box">
                                     <p>No items match your search.</p>
-                                    <button 
+                                    <button
                                         className="btn btn-outline btn-small"
                                         onClick={() => {
                                             setSearchQuery('');
@@ -296,7 +297,7 @@ const Pantry = () => {
                                     <div key={category} className="pantry-group">
                                         <div className="group-header">
                                             <h3>
-                                                {getCategoryIcon(category)} {getCategoryLabel(category)}
+                                                {getCategoryLabel(category)}
                                                 <span className="group-count">{items.length}</span>
                                             </h3>
                                         </div>

@@ -89,4 +89,15 @@ export const favoritesAPI = {
     clear: () => API.delete('/favorites/clear/'),
 };
 
+// ==================== NUTRITION APIs ====================
+
+export const nutritionAPI = {
+    getAll: () => API.get('/nutrition/'),
+    getByIngredient: (ingredientId) => API.get(`/nutrition/ingredient/${ingredientId}/`),
+    create: (data) => API.post('/nutrition/create/', data),
+    update: (ingredientId, data) => API.put(`/nutrition/ingredient/${ingredientId}/update/`, data),
+    delete: (ingredientId) => API.delete(`/nutrition/ingredient/${ingredientId}/delete/`),
+    getRecipeNutrition: (recipeId) => API.get(`/recipes/${recipeId}/nutrition/`),
+};
+
 export default API;

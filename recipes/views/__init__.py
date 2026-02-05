@@ -54,3 +54,12 @@ from .favorite_views import (
     favorite_detail,
     favorites_with_pantry_match,
 )
+
+from .nutrition_views import (
+    ingredient_nutrition_list,
+    ingredient_nutrition_detail,
+    ingredient_nutrition_create,
+    ingredient_nutrition_update,
+    ingredient_nutrition_delete,
+    recipe_nutrition,
+)
