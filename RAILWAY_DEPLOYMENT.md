@@ -170,6 +170,12 @@ const API_BASE_URL = 'https://your-railway-app.railway.app/api';
 
 **Solution**: Updated `nixpacks.toml` to use `'...'` which tells Railway to auto-detect Python and handle the installation automatically. This ensures pip is available when needed.
 
+### ❌ PostgreSQL Package Collision Error (exit code: 25)
+
+**Cause**: Conflict between `postgresql-16.4-dev` and `postgresql-16.4` packages. This happened when manually adding `postgresql` to nixPkgs while `'...'` was already auto-detecting and including it.
+
+**Solution**: Removed the manual `postgresql` package from `nixpacks.toml`. The `'...'` auto-detection handles all required packages including PostgreSQL client libraries needed by `psycopg2`. Final config: `nixPkgs = ['...']`
+
 ### Migration Issues
 
 If migrations fail:
