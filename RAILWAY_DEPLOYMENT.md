@@ -6,7 +6,9 @@ This guide will help you deploy your Recipe Planner backend to Railway.app.
 
 ✅ **requirements.txt** - Python dependencies including gunicorn
 ✅ **Procfile** - Tells Railway how to run your Django app
-✅ **runtime.txt** - Specifies Python version (3.8.10)
+✅ **runtime.txt** - Specifies Python version (3.11.9)
+✅ **railway.json** - Railway-specific configuration
+✅ **nixpacks.toml** - Nixpacks build configuration
 ✅ **Updated settings.py** - Production-ready configuration
 ✅ **.env.example** - Template for environment variables
 ✅ **.gitignore** - Prevents sensitive data from being committed
@@ -144,6 +146,24 @@ const API_BASE_URL = 'https://your-railway-app.railway.app/api';
 
 ## Troubleshooting
 
+### ❌ "No start command was found" Error
+
+**Cause**: Railway couldn't find the start command or detected the wrong root directory.
+
+**Solution**: This is fixed by the `railway.json` and `nixpacks.toml` files that were created. Make sure both files are committed to your repository.
+
+### ❌ Python Version Error ("no precompiled python found")
+
+**Cause**: Railway doesn't support Python 3.8.10 as a precompiled package.
+
+**Solution**: Updated `runtime.txt` to Python 3.11.9 which is fully supported by Railway.
+
+### ❌ "root directory set as 'backend'" Error
+
+**Cause**: Railway auto-detected a `backend` folder and set it as root.
+
+**Solution**: The `railway.json` file configures Railway to use the correct root directory where `manage.py` is located.
+
 ### Migration Issues
 
 If migrations fail:
@@ -167,6 +187,20 @@ Ensure WhiteNoise is in requirements.txt and settings.py is configured correctly
 1. Verify PostgreSQL database is running in Railway
 2. Check that `DATABASE_URL` is set automatically
 3. Review logs for connection errors
+
+### Build Fails After Following This Guide
+
+1. Ensure all new files are committed:
+   ```bash
+   git add railway.json nixpacks.toml runtime.txt
+   git commit -m "Fix Railway deployment configuration"
+   git push origin main
+   ```
+
+2. In Railway dashboard, trigger a new deployment:
+   - Go to your service
+   - Click "Deployments"
+   - Click "Redeploy" on the latest deployment
 
 ## Monitoring
 
