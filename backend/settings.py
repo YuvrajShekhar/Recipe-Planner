@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g5$=sjc7ja95kx8*_!f6@(f6p1d@&1e_$-in7%p96jw-xr)oh&'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-g5$=sjc7ja95kx8*_!f6@(f6p1d@&1e_$-in7%p96jw-xr)oh&')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 
 # Application definition
@@ -45,6 +51,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # For serving static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,16 +84,30 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'recipe_planner_db',
-        'USER': 'recipe_user',
-        'PASSWORD': 'yuvi@123',
-        'HOST': 'localhost',
-        'PORT': '5432',
+# Use Railway's DATABASE_URL if available, otherwise use local database
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    # Production database from Railway
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Local development database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'recipe_planner_db',
+            'USER': 'recipe_user',
+            'PASSWORD': 'yuvi@123',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 
 # Password validation
@@ -123,7 +144,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# WhiteNoise configuration for serving static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -146,14 +171,39 @@ REST_FRAMEWORK = {
 SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
 SESSION_COOKIE_HTTPONLY = True
 
-CSRF_TRUSTED_ORIGINS = ['http://81.169.171.133:8000', 'http://localhost:8000', 'http://127.0.0.1:8000']
+# CSRF and CORS Configuration for Railway deployment
+# Get frontend URL from environment variable
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
+
+# Build CSRF trusted origins list
+csrf_origins = [
+    BACKEND_URL,
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://81.169.171.133:8000',
+]
+
+# Add Railway URLs if they exist
+if os.getenv('RAILWAY_STATIC_URL'):
+    csrf_origins.append(f"https://{os.getenv('RAILWAY_STATIC_URL')}")
+
+CSRF_TRUSTED_ORIGINS = csrf_origins
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = [
+cors_origins = [
+    FRONTEND_URL,
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://81.169.171.133:3000',
 ]
+
+# Add Railway frontend URL if provided
+railway_frontend = os.getenv('RAILWAY_FRONTEND_URL')
+if railway_frontend:
+    cors_origins.append(f"https://{railway_frontend}")
+
+CORS_ALLOWED_ORIGINS = cors_origins
 
 CORS_ALLOW_CREDENTIALS = True
 
