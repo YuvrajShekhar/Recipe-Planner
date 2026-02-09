@@ -8,24 +8,32 @@ Your Railway deployment failed with these errors:
 - ❌ "root directory set as 'backend'"
 - ❌ "pip: command not found" (exit code: 127)
 - ❌ "collision between postgresql packages" (exit code: 25)
+- ❌ "'`' is not a valid port number" (exit code: 1)
 
 ## ✅ Solution Applied
 
 I've created and updated these files to fix the issues:
 
-### 1. **railway.json** - NEW FILE
+### 1. **railway.json** - SIMPLIFIED
 Tells Railway:
-- Use the correct root directory (where `manage.py` is located)
-- Start command: `gunicorn backend.wsgi --bind 0.0.0.0:$PORT`
+- Use NIXPACKS builder
+- Restart policy for failures
+- **No start command** (uses Procfile instead)
 
-### 2. **nixpacks.toml** - NEW FILE (UPDATED TWICE)
-Configures the build process:
-- Uses `'...'` to let Railway auto-detect Python and ALL its dependencies
-- Removed manual PostgreSQL package (auto-detected handles it)
-- Sets the correct start command
-- Fixes "pip: command not found" and "package collision" errors
+### 2. **nixpacks.toml** - SIMPLIFIED
+Minimal configuration:
+- Uses `'...'` to let Railway auto-detect Python and ALL dependencies
+- **No start command** (uses Procfile instead)
+- Fixes "pip not found", "package collision", and "$PORT" errors
 
-### 3. **runtime.txt** - UPDATED
+### 3. **Procfile** - THE SINGLE SOURCE OF TRUTH
+```
+web: gunicorn backend.wsgi --bind 0.0.0.0:$PORT
+release: python manage.py migrate --no-input
+```
+This is the ONLY place defining how to start the app!
+
+### 4. **runtime.txt** - UPDATED
 Changed from: `python-3.8.10` (not available on Railway)
 Changed to: `python-3.11.9` (fully supported)
 
