@@ -164,6 +164,12 @@ const API_BASE_URL = 'https://your-railway-app.railway.app/api';
 
 **Solution**: The `railway.json` file configures Railway to use the correct root directory where `manage.py` is located.
 
+### ❌ "pip: command not found" Error (exit code: 127)
+
+**Cause**: The nixpacks configuration was trying to use `pip` before Python was properly set up, or was manually specifying the install phase incorrectly.
+
+**Solution**: Updated `nixpacks.toml` to use `'...'` which tells Railway to auto-detect Python and handle the installation automatically. This ensures pip is available when needed.
+
 ### Migration Issues
 
 If migrations fail:

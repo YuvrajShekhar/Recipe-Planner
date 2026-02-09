@@ -1,11 +1,12 @@
 # 🚀 Railway Deployment - Quick Fix
 
-## Problem You Encountered
+## Problems You Encountered
 
 Your Railway deployment failed with these errors:
 - ❌ "No start command was found"
 - ❌ "no precompiled python found for core:python@3.8.10"
 - ❌ "root directory set as 'backend'"
+- ❌ "pip: command not found" (exit code: 127)
 
 ## ✅ Solution Applied
 
@@ -16,11 +17,12 @@ Tells Railway:
 - Use the correct root directory (where `manage.py` is located)
 - Start command: `gunicorn backend.wsgi --bind 0.0.0.0:$PORT`
 
-### 2. **nixpacks.toml** - NEW FILE
+### 2. **nixpacks.toml** - NEW FILE (UPDATED)
 Configures the build process:
-- Install PostgreSQL packages
-- Install Python dependencies
-- Set the correct start command
+- Uses `'...'` to let Railway auto-detect Python and its dependencies
+- Adds PostgreSQL packages for database connectivity
+- Sets the correct start command
+- Fixes "pip: command not found" by letting Railway handle Python setup automatically
 
 ### 3. **runtime.txt** - UPDATED
 Changed from: `python-3.8.10` (not available on Railway)
