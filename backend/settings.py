@@ -224,7 +224,7 @@ cors_origins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://81.169.171.133:3000',
-    'https://recipe-planner.up.railway.app/',
+    'https://recipe-planner.up.railway.app',
 ]
 
 # Add Railway frontend URL if provided
