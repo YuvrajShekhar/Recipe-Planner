@@ -172,7 +172,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Django REST Framework Configuration
-REST_FRAMEWORK = {
+REST_FRAMEWORK = {cors_origins
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'recipes.authentication.CsrfExemptSessionAuthentication',
     ],
