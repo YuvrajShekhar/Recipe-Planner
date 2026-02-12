@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const API = axios.create({
-    baseURL: 'http://81.169.171.133:8000/api',
+    baseURL: 'https://recipe-planner-production.up.railway.app/api',
     timeout: 10000,
     withCredentials: true, // Important for session cookies
     headers: {
@@ -50,12 +50,12 @@ export const recipeAPI = {
 // ==================== MATCHING APIs ====================
 
 export const matchingAPI = {
-    matchByIngredients: (ingredientIds, params) => 
+    matchByIngredients: (ingredientIds, params) =>
         API.post('/recipes/match/', { ingredient_ids: ingredientIds }, { params }),
     matchFromPantry: (params) => API.get('/recipes/match/pantry/', { params }),
-    findComplete: (ingredientIds, params) => 
+    findComplete: (ingredientIds, params) =>
         API.post('/recipes/match/complete/', { ingredient_ids: ingredientIds }, { params }),
-    findAlmost: (ingredientIds, maxMissing, params) => 
+    findAlmost: (ingredientIds, maxMissing, params) =>
         API.post('/recipes/match/almost/', { ingredient_ids: ingredientIds, max_missing: maxMissing }, { params }),
 };
 
@@ -63,9 +63,9 @@ export const matchingAPI = {
 
 export const pantryAPI = {
     getAll: (params) => API.get('/pantry/', { params }),
-    add: (ingredientId, quantity) => 
+    add: (ingredientId, quantity) =>
         API.post('/pantry/add/', { ingredient_id: ingredientId, quantity }),
-    addMultiple: (ingredients) => 
+    addMultiple: (ingredients) =>
         API.post('/pantry/add-multiple/', { ingredients }),
     getById: (id) => API.get(`/pantry/${id}/`),
     update: (id, quantity) => API.put(`/pantry/${id}/update/`, { quantity }),

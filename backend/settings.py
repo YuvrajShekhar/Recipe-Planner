@@ -31,7 +31,23 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-g5$=sjc7ja95kx8*_!f6@(f6p1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+# ALLOWED_HOSTS configuration
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+
+# Automatically add Railway domain if RAILWAY_PUBLIC_DOMAIN is set
+if os.getenv('RAILWAY_PUBLIC_DOMAIN'):
+    ALLOWED_HOSTS.append(os.getenv('RAILWAY_PUBLIC_DOMAIN'))
+
+# Add Railway static URL if available
+if os.getenv('RAILWAY_STATIC_URL'):
+    ALLOWED_HOSTS.append(os.getenv('RAILWAY_STATIC_URL'))
+
+# Allow all Railway.app domains
+ALLOWED_HOSTS.extend(['*.railway.app', '.railway.app'])
+
+# Development fallback
+if not ALLOWED_HOSTS or DEBUG:
+    ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -178,7 +194,6 @@ BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
 
 # Build CSRF trusted origins list
 csrf_origins = [
-    BACKEND_URL,
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://81.169.171.133:8000',
@@ -187,6 +202,19 @@ csrf_origins = [
 # Add Railway URLs if they exist
 if os.getenv('RAILWAY_STATIC_URL'):
     csrf_origins.append(f"https://{os.getenv('RAILWAY_STATIC_URL')}")
+
+if os.getenv('RAILWAY_PUBLIC_DOMAIN'):
+    csrf_origins.append(f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}")
+
+# Add backend URL if specified
+if BACKEND_URL and BACKEND_URL not in ['http://localhost:8000']:
+    csrf_origins.append(BACKEND_URL)
+
+# Allow all Railway domains
+csrf_origins.extend([
+    'https://*.railway.app',
+    'https://.railway.app'
+])
 
 CSRF_TRUSTED_ORIGINS = csrf_origins
 

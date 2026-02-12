@@ -1,92 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#e74c3c" />
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="RecipePlanner - Find recipes based on ingredients you have. Smart meal planning made easy. Search, save favorites, and manage your pantry." />
-    <meta name="keywords" content="recipes, cooking, meal planning, ingredients, pantry, food" />
-    <meta name="author" content="RecipePlanner" />
-    
-    <!-- Open Graph / Social Media -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="RecipePlanner - Find Recipes by Ingredients" />
-    <meta property="og:description" content="Discover recipes you can make with ingredients you already have. Smart meal planning made easy." />
-    <meta property="og:url" content="http://81.169.171.133:3000" />
-    
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <title>RecipePlanner</title>
-    
-    <style>
-      /* Preloader styles */
-      #preloader {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        transition: opacity 0.3s;
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#e74c3c" />
+
+  <!-- SEO Meta Tags -->
+  <meta name="description"
+    content="RecipePlanner - Find recipes based on ingredients you have. Smart meal planning made easy. Search, save favorites, and manage your pantry." />
+  <meta name="keywords" content="recipes, cooking, meal planning, ingredients, pantry, food" />
+  <meta name="author" content="RecipePlanner" />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="RecipePlanner - Find Recipes by Ingredients" />
+  <meta property="og:description"
+    content="Discover recipes you can make with ingredients you already have. Smart meal planning made easy." />
+  <meta property="og:url" content="https://recipe-planner-production.up.railway.app" />
+
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+
+  <!-- Manifest -->
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <title>RecipePlanner</title>
+
+  <style>
+    /* Preloader styles */
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s;
+    }
+
+    #preloader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .preloader-content {
+      text-align: center;
+    }
+
+    .preloader-icon {
+      font-size: 4rem;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
       }
-      #preloader.hidden {
-        opacity: 0;
-        pointer-events: none;
+
+      50% {
+        transform: translateY(-15px);
       }
-      .preloader-content {
-        text-align: center;
-      }
-      .preloader-icon {
-        font-size: 4rem;
-        animation: bounce 1s infinite;
-      }
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-15px); }
-      }
-      .preloader-text {
-        margin-top: 15px;
-        color: #666;
-        font-family: 'Inter', sans-serif;
-      }
-    </style>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    
-    <!-- Preloader -->
-    <div id="preloader">
-      <div class="preloader-content">
-        <div class="preloader-icon">🍳</div>
-        <p class="preloader-text">Loading RecipePlanner...</p>
-      </div>
+    }
+
+    .preloader-text {
+      margin-top: 15px;
+      color: #666;
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+
+  <!-- Preloader -->
+  <div id="preloader">
+    <div class="preloader-content">
+      <div class="preloader-icon">🍳</div>
+      <p class="preloader-text">Loading RecipePlanner...</p>
     </div>
-    
-    <div id="root"></div>
-    
-    <script>
-      // Hide preloader when app loads
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          document.getElementById('preloader').classList.add('hidden');
-        }, 500);
-      });
-    </script>
-  </body>
+  </div>
+
+  <div id="root"></div>
+
+  <script>
+    // Hide preloader when app loads
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        document.getElementById('preloader').classList.add('hidden');
+      }, 500);
+    });
+  </script>
+</body>
+
 </html>
