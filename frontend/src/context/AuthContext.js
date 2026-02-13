@@ -10,6 +10,13 @@ export const AuthProvider = ({ children }) => {
 
     // Check if user is logged in on app load
     const checkAuth = useCallback(async () => {
+        // If no token in localStorage, user is not authenticated
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            setUser(null);
+            setLoading(false);
+            return;
+        }
         try {
             setLoading(true);
             const response = await authAPI.getProfile();
@@ -17,8 +24,10 @@ export const AuthProvider = ({ children }) => {
             setError(null);
         } catch (err) {
             setUser(null);
-            // Don't set error for 403 (not authenticated) - that's expected
-            if (err.response?.status !== 403) {
+            // Token is invalid or expired — remove it
+            localStorage.removeItem('authToken');
+            // Don't set error for 401/403 (not authenticated) - that's expected
+            if (err.response?.status !== 403 && err.response?.status !== 401) {
                 setError(err.message);
             }
         } finally {
@@ -34,6 +43,10 @@ export const AuthProvider = ({ children }) => {
         try {
             setError(null);
             const response = await authAPI.login(credentials);
+            // Save the auth token to localStorage
+            if (response.data.token) {
+                localStorage.setItem('authToken', response.data.token);
+            }
             setUser(response.data.user);
             return response.data;
         } catch (err) {
@@ -59,6 +72,8 @@ export const AuthProvider = ({ children }) => {
         } catch (err) {
             console.error('Logout error:', err);
         } finally {
+            // Always remove the token and clear user state
+            localStorage.removeItem('authToken');
             setUser(null);
             setError(null);
         }

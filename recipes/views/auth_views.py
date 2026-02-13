@@ -2,7 +2,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.contrib.auth import authenticate, login, logout
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from ..serializers import UserSerializer, UserRegistrationSerializer
 
@@ -51,9 +52,12 @@ def register_user(request):
     
     if serializer.is_valid():
         user = serializer.save()
+        # Create auth token for the new user
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({
             'message': 'User registered successfully',
-            'user': UserSerializer(user).data
+            'user': UserSerializer(user).data,
+            'token': token.key,
         }, status=status.HTTP_201_CREATED)
     
     return Response({
@@ -85,10 +89,12 @@ def login_user(request):
     user = authenticate(request, username=username, password=password)
     
     if user is not None:
-        login(request, user)
+        # Create or retrieve the auth token
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({
             'message': 'Login successful',
-            'user': UserSerializer(user).data
+            'user': UserSerializer(user).data,
+            'token': token.key,
         }, status=status.HTTP_200_OK)
     
     return Response({
@@ -104,7 +110,11 @@ def logout_user(request):
     
     POST /api/auth/logout/
     """
-    logout(request)
+    # Delete the user's token to invalidate it
+    try:
+        request.user.auth_token.delete()
+    except Token.DoesNotExist:
+        pass
     return Response({
         'message': 'Logout successful'
     }, status=status.HTTP_200_OK)
