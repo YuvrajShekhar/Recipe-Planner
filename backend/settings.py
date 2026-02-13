@@ -174,7 +174,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'recipes.authentication.CsrfExemptSessionAuthentication',
+        # 'recipes.authentication.CsrfExemptSessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -213,7 +214,8 @@ if BACKEND_URL and BACKEND_URL not in ['http://localhost:8000']:
 # Allow all Railway domains
 csrf_origins.extend([
     'https://*.railway.app',
-    'https://.railway.app'
+    'https://.railway.app',
+    'https://recipe-planner.up.railway.app',
 ])
 
 CSRF_TRUSTED_ORIGINS = csrf_origins
@@ -235,6 +237,10 @@ if railway_frontend:
 CORS_ALLOWED_ORIGINS = cors_origins
 
 CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_METHODS = [
     'DELETE',
