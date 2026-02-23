@@ -30,11 +30,11 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="container">
                 <Link to="/" className="navbar-brand" onClick={closeMobileMenu}>
-                    🍳 Recipe<span>Planner</span>
+                    🍳 Fresh<span>Plate</span>
                 </Link>
 
                 {/* Mobile Menu Button */}
-                <button 
+                <button
                     className={`mobile-menu-btn ${mobileMenuOpen ? 'open' : ''}`}
                     onClick={toggleMobileMenu}
                     aria-label="Toggle menu"
@@ -47,8 +47,8 @@ const Navbar = () => {
                 {/* Navigation Links */}
                 <ul className={`navbar-nav ${mobileMenuOpen ? 'open' : ''}`}>
                     <li>
-                        <Link 
-                            to="/recipes" 
+                        <Link
+                            to="/recipes"
                             className={isActive('/recipes')}
                             onClick={closeMobileMenu}
                         >
@@ -56,8 +56,8 @@ const Navbar = () => {
                         </Link>
                     </li>
                     <li>
-                        <Link 
-                            to="/match" 
+                        <Link
+                            to="/match"
                             className={isActive('/match')}
                             onClick={closeMobileMenu}
                         >
@@ -68,8 +68,8 @@ const Navbar = () => {
                     {isAuthenticated ? (
                         <>
                             <li>
-                                <Link 
-                                    to="/pantry" 
+                                <Link
+                                    to="/pantry"
                                     className={isActive('/pantry')}
                                     onClick={closeMobileMenu}
                                 >
@@ -77,8 +77,8 @@ const Navbar = () => {
                                 </Link>
                             </li>
                             <li>
-                                <Link 
-                                    to="/favorites" 
+                                <Link
+                                    to="/favorites"
                                     className={isActive('/favorites')}
                                     onClick={closeMobileMenu}
                                 >
@@ -86,8 +86,8 @@ const Navbar = () => {
                                 </Link>
                             </li>
                             <li className="navbar-user">
-                                <Link 
-                                    to="/profile" 
+                                <Link
+                                    to="/profile"
                                     className={isActive('/profile')}
                                     onClick={closeMobileMenu}
                                 >
@@ -95,8 +95,8 @@ const Navbar = () => {
                                 </Link>
                             </li>
                             <li>
-                                <button 
-                                    onClick={handleLogout} 
+                                <button
+                                    onClick={handleLogout}
                                     className="btn btn-outline btn-small"
                                 >
                                     Logout
@@ -106,8 +106,8 @@ const Navbar = () => {
                     ) : (
                         <>
                             <li>
-                                <Link 
-                                    to="/login" 
+                                <Link
+                                    to="/login"
                                     className="btn btn-outline btn-small"
                                     onClick={closeMobileMenu}
                                 >
@@ -115,8 +115,8 @@ const Navbar = () => {
                                 </Link>
                             </li>
                             <li>
-                                <Link 
-                                    to="/register" 
+                                <Link
+                                    to="/register"
                                     className="btn btn-primary btn-small"
                                     onClick={closeMobileMenu}
                                 >

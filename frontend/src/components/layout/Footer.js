@@ -9,7 +9,7 @@ const Footer = () => {
             <div className="container">
                 <div className="footer-content">
                     <div className="footer-brand">
-                        <h3>🍳 Recipe<span>Planner</span></h3>
+                        <h3>🍳 Fresh<span>Plate</span></h3>
                         <p>Find recipes based on ingredients you have.</p>
                     </div>
 

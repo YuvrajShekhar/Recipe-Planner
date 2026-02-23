@@ -15,7 +15,7 @@ from ..serializers import UserSerializer, UserRegistrationSerializer
 def api_root(request):
     """API Root - Lists all available endpoints"""
     return Response({
-        'message': 'Welcome to Recipe Planner API',
+        'message': 'Welcome to FreshPlate API',
         'endpoints': {
             'auth': {
                 'register': '/api/auth/register/',
