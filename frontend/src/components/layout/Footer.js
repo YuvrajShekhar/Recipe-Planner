@@ -34,7 +34,7 @@ const Footer = () => {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; {currentYear} RecipePlanner. All rights reserved.</p>
+                    <p>&copy; {currentYear} FreshPlate. All rights reserved.</p>
                     <p>Built with ❤️ for food lovers</p>
                 </div>
             </div>

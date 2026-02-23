@@ -268,7 +268,7 @@ const Home = () => {
             <section className="features-section">
                 <div className="container">
                     <div className="section-header">
-                        <h2>Why Use RecipePlanner?</h2>
+                        <h2>Why Use FreshPlate?</h2>
                         <p>Everything you need to plan your meals efficiently</p>
                     </div>
 

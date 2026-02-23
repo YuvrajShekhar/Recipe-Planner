@@ -145,7 +145,7 @@ const Register = () => {
                 <div className="auth-header">
                     <div className="auth-icon">🍳</div>
                     <h2>Create Account</h2>
-                    <p>Join RecipePlanner to save your favorites</p>
+                    <p>Join FreshPlate to save your favorites</p>
                 </div>
 
                 {apiError && (
