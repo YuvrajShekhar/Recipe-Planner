@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 // Create axios instance with base configuration
+// Uses environment variable for flexibility between local and production
 const API = axios.create({
-    baseURL: 'https://recipe-planner-production.up.railway.app/api',
+    baseURL: process.env.REACT_APP_API_URL || 'https://recipe-planner-production.up.railway.app/api',
     timeout: 10000,
     withCredentials: true, // Important for session cookies
     headers: {
@@ -107,6 +108,31 @@ export const nutritionAPI = {
     update: (ingredientId, data) => API.put(`/nutrition/ingredient/${ingredientId}/update/`, data),
     delete: (ingredientId) => API.delete(`/nutrition/ingredient/${ingredientId}/delete/`),
     getRecipeNutrition: (recipeId) => API.get(`/recipes/${recipeId}/nutrition/`),
+};
+
+// ==================== HEALTH / DAILY NUTRITION LOG APIs ====================
+
+export const healthAPI = {
+    // Get logs (optionally filtered by date, month, year)
+    getLogs: (params) => API.get('/health/logs/', { params }),
+
+    // Create a new nutrition log entry
+    createLog: (data) => API.post('/health/logs/', data),
+
+    // Get a specific log entry
+    getLog: (id) => API.get(`/health/logs/${id}/`),
+
+    // Update a log entry
+    updateLog: (id, data) => API.put(`/health/logs/${id}/`, data),
+
+    // Delete a log entry
+    deleteLog: (id) => API.delete(`/health/logs/${id}/`),
+
+    // Get daily summary (aggregated totals for a specific date)
+    getDailySummary: (date) => API.get('/health/daily-summary/', { params: { date } }),
+
+    // Get monthly summary (all days in a month)
+    getMonthlySummary: (month, year) => API.get('/health/monthly-summary/', { params: { month, year } }),
 };
 
 export default API;

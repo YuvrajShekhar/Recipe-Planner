@@ -202,6 +202,37 @@ class IngredientNutrition(models.Model):
         return (protein * 4) + (carbs * 4) + (fat * 9)
     
     gram_equivalent_per_piece = models.DecimalField(
-    max_digits=6, decimal_places=2, null=True, blank=True,
-    help_text="How many grams in 1 piece/unit of this ingredient (e.g., 1 tomato = 150g)"
-)
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text="How many grams in 1 piece/unit of this ingredient (e.g., 1 tomato = 150g)"
+    )
+
+
+class DailyNutritionLog(models.Model):
+    """Tracks daily food intake for nutrition monitoring"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='nutrition_logs')
+    date = models.DateField(help_text="Date of consumption")
+    dish_name = models.CharField(max_length=200, help_text="Name of the dish/food consumed")
+
+    # Nutritional information
+    calories = models.DecimalField(max_digits=7, decimal_places=2, help_text="Total calories")
+    protein = models.DecimalField(max_digits=6, decimal_places=2, help_text="Protein in grams")
+    carbs = models.DecimalField(max_digits=6, decimal_places=2, help_text="Carbohydrates in grams")
+    fat = models.DecimalField(max_digits=6, decimal_places=2, help_text="Fat in grams")
+    fiber = models.DecimalField(max_digits=6, decimal_places=2, default=0, help_text="Fiber in grams")
+
+    # Metadata
+    notes = models.TextField(blank=True, help_text="Optional notes about the meal")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        verbose_name = "Daily Nutrition Log"
+        verbose_name_plural = "Daily Nutrition Logs"
+        indexes = [
+            models.Index(fields=['user', 'date']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.dish_name} on {self.date}"

@@ -227,6 +227,7 @@ cors_origins = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://81.169.171.133:3000',
+    'http://81.169.171.133:3001',  # Alternative port
     'https://recipe-planner.up.railway.app',
 ]
 
@@ -238,10 +239,23 @@ if railway_frontend:
 CORS_ALLOWED_ORIGINS = cors_origins
 
 CORS_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
+
+# CSRF and Session Cookie settings - environment-based
+# For local development, use relaxed settings; for production, use strict settings
+LOCAL_DEVELOPMENT = os.getenv('LOCAL_DEVELOPMENT', 'False') == 'True'
+
+if LOCAL_DEVELOPMENT:
+    # Local development: relaxed CSRF/session settings
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = False
+else:
+    # Production: strict CSRF/session settings
+    CSRF_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SECURE = True
 
 CORS_ALLOW_METHODS = [
     'DELETE',

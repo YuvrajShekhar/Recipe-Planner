@@ -63,3 +63,10 @@ from .nutrition_views import (
     ingredient_nutrition_delete,
     recipe_nutrition,
 )
+
+from .health_views import (
+    nutrition_log_list,
+    nutrition_log_detail,
+    nutrition_daily_summary,
+    nutrition_monthly_summary,
+)

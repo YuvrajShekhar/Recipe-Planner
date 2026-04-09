@@ -21,6 +21,7 @@ import IngredientMatch from './pages/IngredientMatch';
 import Pantry from './pages/Pantry';
 import Favorites from './pages/Favorites';
 import Profile from './pages/Profile';
+import Health from './pages/Health';
 import NotFound from './pages/NotFound';
 
 // Styles
@@ -69,15 +70,23 @@ function App() {
                                         </ProtectedRoute>
                                     } 
                                 />
-                                <Route 
-                                    path="/profile" 
+                                <Route
+                                    path="/profile"
                                     element={
                                         <ProtectedRoute>
                                             <Profile />
                                         </ProtectedRoute>
-                                    } 
+                                    }
                                 />
-                                
+                                <Route
+                                    path="/health"
+                                    element={
+                                        <ProtectedRoute>
+                                            <Health />
+                                        </ProtectedRoute>
+                                    }
+                                />
+
                                 {/* 404 Route */}
                                 <Route path="*" element={<NotFound />} />
                             </Routes>

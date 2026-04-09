@@ -85,6 +85,15 @@ const Navbar = () => {
                                     Favorites
                                 </Link>
                             </li>
+                            <li>
+                                <Link
+                                    to="/health"
+                                    className={isActive('/health')}
+                                    onClick={closeMobileMenu}
+                                >
+                                    Health
+                                </Link>
+                            </li>
                             <li className="navbar-user">
                                 <Link
                                     to="/profile"

@@ -62,4 +62,10 @@ urlpatterns = [
     path('nutrition/ingredient/<int:ingredient_id>/update/', views.ingredient_nutrition_update, name='nutrition-update'),
     path('nutrition/ingredient/<int:ingredient_id>/delete/', views.ingredient_nutrition_delete, name='nutrition-delete'),
     path('recipes/<int:recipe_id>/nutrition/', views.recipe_nutrition, name='recipe-nutrition'),
+
+    # Health / Daily Nutrition Log endpoints
+    path('health/logs/', views.nutrition_log_list, name='nutrition-log-list'),
+    path('health/logs/<int:pk>/', views.nutrition_log_detail, name='nutrition-log-detail'),
+    path('health/daily-summary/', views.nutrition_daily_summary, name='nutrition-daily-summary'),
+    path('health/monthly-summary/', views.nutrition_monthly_summary, name='nutrition-monthly-summary'),
 ]

@@ -1,0 +1,182 @@
+import React, { useState, useEffect } from 'react';
+import { healthAPI } from '../services/api';
+import MonthCalendar from '../components/health/MonthCalendar';
+import DailySummary from '../components/health/DailySummary';
+import FoodEntryForm from '../components/health/FoodEntryForm';
+import '../styles/Health.css';
+
+const Health = () => {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dailySummary, setDailySummary] = useState(null);
+  const [monthlyData, setMonthlyData] = useState({});
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Format date to YYYY-MM-DD
+  const formatDate = (date) => {
+    return date.toISOString().split('T')[0];
+  };
+
+  // Fetch daily summary for selected date
+  const fetchDailySummary = async (date) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const dateString = formatDate(date);
+      const response = await healthAPI.getDailySummary(dateString);
+      setDailySummary(response.data);
+    } catch (err) {
+      console.error('Error fetching daily summary:', err);
+      setError('Failed to load daily summary');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch monthly data for calendar
+  const fetchMonthlyData = async (date) => {
+    try {
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      const response = await healthAPI.getMonthlySummary(month, year);
+
+      // Transform data to object with date keys
+      const dataByDate = {};
+      if (response.data.daily_summaries) {
+        response.data.daily_summaries.forEach(summary => {
+          dataByDate[summary.date] = summary;
+        });
+      }
+      setMonthlyData(dataByDate);
+    } catch (err) {
+      console.error('Error fetching monthly data:', err);
+    }
+  };
+
+  // Load data when component mounts or date changes
+  useEffect(() => {
+    fetchDailySummary(selectedDate);
+    fetchMonthlyData(selectedDate);
+  }, [selectedDate]);
+
+  // Handle date selection from calendar
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+    setShowAddForm(false);
+  };
+
+  // Handle adding new food entry
+  const handleAddEntry = async (entryData) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await healthAPI.createLog(entryData);
+
+      // Refresh data
+      await fetchDailySummary(selectedDate);
+      await fetchMonthlyData(selectedDate);
+
+      setShowAddForm(false);
+      alert('Food entry added successfully!');
+    } catch (err) {
+      console.error('Error adding entry:', err);
+      setError(err.response?.data?.error || 'Failed to add entry');
+      alert(err.response?.data?.error || 'Failed to add entry');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle deleting an entry
+  const handleDeleteEntry = async (entryId) => {
+    if (!window.confirm('Are you sure you want to delete this entry?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      await healthAPI.deleteLog(entryId);
+
+      // Refresh data
+      await fetchDailySummary(selectedDate);
+      await fetchMonthlyData(selectedDate);
+
+      alert('Entry deleted successfully!');
+    } catch (err) {
+      console.error('Error deleting entry:', err);
+      setError('Failed to delete entry');
+      alert('Failed to delete entry');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="health-page">
+      <div className="health-container">
+        <header className="health-header">
+          <h1>Daily Nutrition Tracker</h1>
+          <p>Track your daily food intake and monitor your nutritional goals</p>
+        </header>
+
+        {error && (
+          <div className="error-banner">
+            {error}
+          </div>
+        )}
+
+        <div className="health-content">
+          <div className="calendar-section">
+            <MonthCalendar
+              selectedDate={selectedDate}
+              onDateSelect={handleDateSelect}
+              logsData={monthlyData}
+            />
+
+            <div className="action-buttons">
+              {!showAddForm ? (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="btn-add-entry"
+                  disabled={loading}
+                >
+                  + Add Food Entry
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowAddForm(false)}
+                  className="btn-cancel-add"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+
+            {showAddForm && (
+              <FoodEntryForm
+                onSubmit={handleAddEntry}
+                onCancel={() => setShowAddForm(false)}
+                selectedDate={selectedDate}
+              />
+            )}
+          </div>
+
+          <div className="summary-section">
+            {loading && !dailySummary ? (
+              <div className="loading-spinner">Loading...</div>
+            ) : (
+              <DailySummary
+                summary={dailySummary}
+                onDeleteEntry={handleDeleteEntry}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Health;

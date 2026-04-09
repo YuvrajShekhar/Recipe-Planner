@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition 
+from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition, DailyNutritionLog 
 
 
 @admin.register(Ingredient)
@@ -68,4 +68,23 @@ class IngredientNutritionAdmin(admin.ModelAdmin):
     search_fields = ['ingredient__name']
     autocomplete_fields = ['ingredient']
 
-    
+
+@admin.register(DailyNutritionLog)
+class DailyNutritionLogAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'dish_name', 'calories', 'protein', 'carbs', 'fat', 'fiber', 'created_at')
+    list_filter = ('user', 'date')
+    search_fields = ('user__username', 'dish_name')
+    ordering = ('-date', '-created_at')
+    date_hierarchy = 'date'
+
+    fieldsets = (
+        ('Basic Info', {
+            'fields': ('user', 'date', 'dish_name')
+        }),
+        ('Nutritional Information', {
+            'fields': ('calories', 'protein', 'carbs', 'fat', 'fiber')
+        }),
+        ('Additional Info', {
+            'fields': ('notes',)
+        }),
+    )

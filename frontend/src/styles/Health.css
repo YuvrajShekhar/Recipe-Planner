@@ -1,0 +1,587 @@
+/* Health Page Styles */
+.health-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem 1rem;
+}
+
+.health-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.health-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.health-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.health-header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.error-banner {
+  background-color: #ff6b6b;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.health-content {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Calendar Section */
+.calendar-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.month-calendar {
+  margin-bottom: 1.5rem;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.calendar-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.calendar-title h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.nav-button {
+  background: #667eea;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover:not(:disabled) {
+  background: #764ba2;
+  transform: scale(1.1);
+}
+
+.nav-button:disabled {
+  cursor: not-allowed;
+  background: #ccc;
+}
+
+.today-button {
+  background: #48bb78;
+  color: white;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.today-button:hover {
+  background: #38a169;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 0.5rem;
+}
+
+.weekday {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  padding: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  position: relative;
+  transition: all 0.2s ease;
+  background: #f7fafc;
+  border: 2px solid transparent;
+}
+
+.calendar-day.empty {
+  background: transparent;
+  cursor: default;
+}
+
+.calendar-day:not(.empty):not(.future) {
+  cursor: pointer;
+}
+
+.calendar-day:not(.empty):not(.future):hover {
+  background: #e6fffa;
+  transform: scale(1.05);
+}
+
+.calendar-day.today {
+  background: #bee3f8;
+  border-color: #3182ce;
+}
+
+.calendar-day.selected {
+  background: #667eea;
+  color: white;
+  border-color: #764ba2;
+}
+
+.calendar-day.future {
+  background: #f9f9f9;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.calendar-day.has-logs {
+  background: #c6f6d5;
+}
+
+.calendar-day.selected.has-logs {
+  background: #48bb78;
+}
+
+.day-number {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.log-indicator {
+  position: absolute;
+  bottom: 2px;
+  font-size: 0.6rem;
+  color: #38a169;
+}
+
+.calendar-day.selected .log-indicator {
+  color: white;
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-dot.today-legend {
+  background: #bee3f8;
+  border: 2px solid #3182ce;
+}
+
+.legend-dot.has-logs-legend {
+  background: #c6f6d5;
+}
+
+/* Action Buttons */
+.action-buttons {
+  margin-top: 1rem;
+}
+
+.btn-add-entry,
+.btn-cancel-add {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-add-entry {
+  background: #48bb78;
+  color: white;
+}
+
+.btn-add-entry:hover:not(:disabled) {
+  background: #38a169;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+}
+
+.btn-add-entry:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-cancel-add {
+  background: #fc8181;
+  color: white;
+}
+
+.btn-cancel-add:hover {
+  background: #f56565;
+}
+
+/* Food Entry Form */
+.food-entry-form {
+  background: #f7fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.food-entry-form h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.6rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-group input.error {
+  border-color: #fc8181;
+}
+
+.error-text {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.nutrition-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-cancel,
+.btn-submit {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-cancel:hover {
+  background: #cbd5e0;
+}
+
+.btn-submit {
+  background: #667eea;
+  color: white;
+}
+
+.btn-submit:hover {
+  background: #764ba2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Daily Summary Section */
+.summary-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.daily-summary {
+  min-height: 400px;
+}
+
+.summary-header {
+  margin-bottom: 2rem;
+}
+
+.summary-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.summary-date {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.no-entries {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #999;
+}
+
+.no-entries p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+/* Totals Card */
+.totals-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.totals-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.totals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.total-item {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.total-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.total-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Entries List */
+.entries-list h3 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.entry-card {
+  background: #f7fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.entry-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateX(4px);
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 0.75rem;
+}
+
+.entry-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-delete-entry {
+  background: #fc8181;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.btn-delete-entry:hover {
+  background: #f56565;
+  transform: scale(1.1);
+}
+
+.entry-nutrition {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.nutrition-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+}
+
+.nutrition-badge.calories {
+  background: #f6ad55;
+}
+
+.nutrition-badge.protein {
+  background: #fc8181;
+}
+
+.nutrition-badge.carbs {
+  background: #90cdf4;
+}
+
+.nutrition-badge.fat {
+  background: #fbb6ce;
+}
+
+.nutrition-badge.fiber {
+  background: #9ae6b4;
+}
+
+.entry-notes {
+  background: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}
+
+.entry-time {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+  font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .health-content {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-section {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .health-header h1 {
+    font-size: 2rem;
+  }
+
+  .totals-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nutrition-grid {
+    grid-template-columns: 1fr;
+  }
+}

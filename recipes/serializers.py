@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition
+from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition, DailyNutritionLog
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -247,3 +247,31 @@ class RecipeNutritionSerializer(serializers.Serializer):
     carbs_percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
     fat_percentage = serializers.DecimalField(max_digits=5, decimal_places=2)
     ingredients_without_nutrition = serializers.ListField(child=serializers.CharField())
+
+
+class DailyNutritionLogSerializer(serializers.ModelSerializer):
+    """Serializer for Daily Nutrition Log entries"""
+
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = DailyNutritionLog
+        fields = [
+            'id', 'user', 'date', 'dish_name', 'calories',
+            'protein', 'carbs', 'fat', 'fiber', 'notes',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+
+
+class DailyNutritionSummarySerializer(serializers.Serializer):
+    """Serializer for daily nutrition summary aggregates"""
+
+    date = serializers.DateField()
+    total_calories = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_protein = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_carbs = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_fat = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_fiber = serializers.DecimalField(max_digits=10, decimal_places=2)
+    entry_count = serializers.IntegerField()
+    entries = DailyNutritionLogSerializer(many=True, read_only=True)
