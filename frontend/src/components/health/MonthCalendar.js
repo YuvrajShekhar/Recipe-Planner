@@ -29,7 +29,7 @@ const MonthCalendar = ({ selectedDate, onDateSelect, logsData }) => {
   // Add days of the month
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(currentYear, currentMonth, day);
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isToday =
       date.getDate() === today.getDate() &&
       date.getMonth() === today.getMonth() &&

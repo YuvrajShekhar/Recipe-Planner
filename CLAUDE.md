@@ -66,7 +66,7 @@ The Django backend uses a **monolithic app structure** with a single `recipes` a
 
 ```
 recipes/
-├── models.py              # All models (Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition)
+├── models.py              # All models (Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition, DailyNutritionLog)
 ├── serializers.py         # DRF serializers
 ├── authentication.py      # Custom auth classes
 ├── views/                 # Organized by feature
@@ -76,7 +76,8 @@ recipes/
 │   ├── matching_views.py  # Core matching algorithm
 │   ├── pantry_views.py    # User's ingredient inventory
 │   ├── favorite_views.py  # Saved recipes
-│   └── nutrition_views.py # Nutritional information
+│   ├── nutrition_views.py # Ingredient nutritional data
+│   └── health_views.py    # Daily nutrition logging (food diary)
 └── urls.py                # All API endpoints (see below)
 ```
 
@@ -88,7 +89,8 @@ recipes/
 - **RecipeIngredient** - Junction table: Recipe ↔ Ingredient (with quantities)
 - **Pantry** - User's available ingredients: User ↔ Ingredient
 - **Favorite** - User's saved recipes: User ↔ Recipe
-- **IngredientNutrition** - Nutritional data per ingredient (per 100g or per unit)
+- **IngredientNutrition** - Nutritional data per ingredient (supports both per-100g and per-unit measurements with gram-conversion factors)
+- **DailyNutritionLog** - Food diary entries per user per date (calories, protein, carbs, fat, fiber + notes)
 
 ### Frontend Structure
 
@@ -107,13 +109,15 @@ frontend/src/
 │   ├── IngredientMatch.js # Core matching UI
 │   ├── Pantry.js          # Pantry management
 │   ├── Favorites.js
-│   └── Profile.js
+│   ├── Profile.js
+│   └── Health.js          # Daily nutrition/food diary logging
 ├── components/            # Organized by feature
 │   ├── auth/
 │   ├── recipes/
 │   ├── ingredients/
 │   ├── pantry/
 │   ├── favorites/
+│   ├── health/
 │   ├── layout/
 │   └── common/
 ├── services/
@@ -150,6 +154,7 @@ All API endpoints are prefixed with `/api/` and defined in [recipes/urls.py](rec
 - **Pantry**: `/api/pantry/` - user's ingredient inventory
 - **Favorites**: `/api/favorites/` - saved recipes
 - **Nutrition**: `/api/nutrition/` - ingredient nutritional data
+- **Health**: `/api/health/` - daily food diary (logs, daily summary, monthly summary)
 
 ### Authentication
 
@@ -192,6 +197,8 @@ Frontend expects (`.env` or build-time):
 5. **Static Files**: Uses WhiteNoise middleware for serving static files in production without needing a separate static file server.
 
 6. **Dietary Preferences**: Recipes have a `preference` field (veg/nonveg) for filtering, not full-featured dietary restrictions.
+
+7. **Health/Food Diary**: The `DailyNutritionLog` model and `/api/health/` endpoints support a separate food diary feature (not tied to pantry ingredients). The `/health` frontend route is protected and requires authentication.
 
 ## Testing the Matching Algorithm
 

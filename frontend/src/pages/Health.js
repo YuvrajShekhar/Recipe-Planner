@@ -3,19 +3,26 @@ import { healthAPI } from '../services/api';
 import MonthCalendar from '../components/health/MonthCalendar';
 import DailySummary from '../components/health/DailySummary';
 import FoodEntryForm from '../components/health/FoodEntryForm';
+import AddFoodChoiceModal from '../components/health/AddFoodChoiceModal';
+import RecipeFoodEntry from '../components/health/RecipeFoodEntry';
 import '../styles/Health.css';
 
 const Health = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dailySummary, setDailySummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState({});
-  const [showAddForm, setShowAddForm] = useState(false);
+  // addMode: null | 'manual' | 'recipe'
+  const [addMode, setAddMode] = useState(null);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Format date to YYYY-MM-DD
+  // Format date to YYYY-MM-DD using local time (not UTC)
   const formatDate = (date) => {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Fetch daily summary for selected date
@@ -63,10 +70,16 @@ const Health = () => {
   // Handle date selection from calendar
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    setShowAddForm(false);
+    setAddMode(null);
+    setShowChoiceModal(false);
   };
 
-  // Handle adding new food entry
+  const handleCancelAdd = () => {
+    setAddMode(null);
+    setShowChoiceModal(false);
+  };
+
+  // Handle adding new food entry (used by both manual form and recipe picker)
   const handleAddEntry = async (entryData) => {
     try {
       setLoading(true);
@@ -77,7 +90,7 @@ const Health = () => {
       await fetchDailySummary(selectedDate);
       await fetchMonthlyData(selectedDate);
 
-      setShowAddForm(false);
+      setAddMode(null);
       alert('Food entry added successfully!');
     } catch (err) {
       console.error('Error adding entry:', err);
@@ -136,9 +149,9 @@ const Health = () => {
             />
 
             <div className="action-buttons">
-              {!showAddForm ? (
+              {addMode === null ? (
                 <button
-                  onClick={() => setShowAddForm(true)}
+                  onClick={() => setShowChoiceModal(true)}
                   className="btn-add-entry"
                   disabled={loading}
                 >
@@ -146,7 +159,7 @@ const Health = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => setShowAddForm(false)}
+                  onClick={handleCancelAdd}
                   className="btn-cancel-add"
                 >
                   Cancel
@@ -154,11 +167,27 @@ const Health = () => {
               )}
             </div>
 
-            {showAddForm && (
+            {addMode === 'manual' && (
               <FoodEntryForm
                 onSubmit={handleAddEntry}
-                onCancel={() => setShowAddForm(false)}
+                onCancel={handleCancelAdd}
                 selectedDate={selectedDate}
+              />
+            )}
+
+            {addMode === 'recipe' && (
+              <RecipeFoodEntry
+                onSubmit={handleAddEntry}
+                onCancel={handleCancelAdd}
+                selectedDate={selectedDate}
+              />
+            )}
+
+            {showChoiceModal && (
+              <AddFoodChoiceModal
+                onChooseManual={() => { setShowChoiceModal(false); setAddMode('manual'); }}
+                onChooseRecipe={() => { setShowChoiceModal(false); setAddMode('recipe'); }}
+                onCancel={() => setShowChoiceModal(false)}
               />
             )}
           </div>
