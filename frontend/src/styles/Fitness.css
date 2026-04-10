@@ -1,0 +1,819 @@
+/* =========================================================
+   Fitness Page
+   ========================================================= */
+
+.fitness-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  padding: 2rem 1rem;
+}
+
+.fitness-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.fitness-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.fitness-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.fitness-header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Layout */
+.fitness-content {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.fitness-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.fitness-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Card */
+.fitness-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.fitness-loading {
+  text-align: center;
+  color: #aaa;
+  padding: 1rem 0;
+  font-size: 0.95rem;
+}
+
+/* =========================================================
+   Steps Panel (StepsPanel.js)
+   ========================================================= */
+
+.steps-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.steps-panel-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.btn-delete-steps {
+  background: #fc8181;
+  border: none;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-delete-steps:hover {
+  background: #f56565;
+  transform: scale(1.1);
+}
+
+.steps-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.steps-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  overflow: hidden;
+}
+
+.steps-number-input {
+  flex: 1;
+  min-width: 0;          /* prevents flex overflow */
+  width: 0;              /* forces flex to control the width */
+  box-sizing: border-box;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  color: #333;
+  -moz-appearance: textfield;
+  transition: border-color 0.2s;
+}
+
+.steps-number-input::-webkit-outer-spin-button,
+.steps-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.steps-number-input:focus {
+  outline: none;
+  border-color: #11998e;
+}
+
+.steps-input-label {
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: 600;
+}
+
+/* reuse .form-group from Health.css — textarea already styled */
+
+.btn-save-steps {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #11998e;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-save-steps:hover:not(:disabled) {
+  background: #0d7a72;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+
+.btn-save-steps.unsaved {
+  background: #38ef7d;
+  color: #1a3a2a;
+}
+
+.btn-save-steps.unsaved:hover:not(:disabled) {
+  background: #2dd46e;
+}
+
+.btn-save-steps:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   Steps Overview Card (progress ring)
+   ========================================================= */
+
+.steps-overview-card h3 {
+  margin: 0 0 1.25rem 0;
+  font-size: 1.1rem;
+  color: #555;
+  font-weight: 600;
+}
+
+.steps-ring-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 1rem;
+}
+
+.steps-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-bg {
+  fill: none;
+  stroke: #e8f5f3;
+  stroke-width: 10;
+}
+
+.ring-fill {
+  fill: none;
+  stroke: #11998e;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.steps-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.steps-big {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #11998e;
+  line-height: 1;
+}
+
+.steps-unit {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.steps-goal {
+  font-size: 0.78rem;
+  color: #aaa;
+}
+
+.steps-pct-bar {
+  height: 8px;
+  background: #e8f5f3;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+
+.steps-pct-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #11998e, #38ef7d);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.steps-pct-label {
+  text-align: center;
+  font-size: 0.88rem;
+  color: #666;
+  margin: 0;
+}
+
+/* =========================================================
+   Calories Card
+   ========================================================= */
+
+.calories-card h3 {
+  margin: 0 0 1.25rem 0;
+  font-size: 1.1rem;
+  color: #555;
+  font-weight: 600;
+}
+
+.cal-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 1.25rem;
+}
+
+.cal-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: 10px;
+}
+
+.cal-item.burnt {
+  background: linear-gradient(135deg, #fff5eb, #ffecd2);
+}
+
+.cal-item.consumed {
+  background: linear-gradient(135deg, #ebf8ff, #e6fffa);
+}
+
+.cal-divider {
+  width: 1px;
+  background: #e2e8f0;
+  margin: 0.5rem 0.75rem;
+}
+
+.cal-icon {
+  font-size: 1.5rem;
+}
+
+.cal-val {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.1;
+}
+
+.cal-item.burnt .cal-val { color: #e67e22; }
+.cal-item.consumed .cal-val { color: #2980b9; }
+
+.cal-lbl {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.cal-note {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.cal-breakdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: 0.72rem;
+  color: #b07540;
+  margin-top: 2px;
+}
+
+.cal-balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.9rem;
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.cal-balance-label {
+  font-size: 0.88rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.cal-balance-val {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.cal-balance-val.surplus { color: #e67e22; }
+.cal-balance-val.deficit { color: #27ae60; }
+
+/* =========================================================
+   Profile hint inside calories card
+   ========================================================= */
+
+.cal-profile-hint {
+  font-size: 0.78rem;
+  color: #999;
+  text-align: center;
+  margin: 0.75rem 0 0;
+}
+
+.cal-profile-hint a {
+  color: #11998e;
+  text-decoration: underline;
+}
+
+/* =========================================================
+   Activity Panel
+   ========================================================= */
+
+.activity-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.activity-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-panel-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.btn-add-activity {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  background: #11998e;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add-activity:hover:not(:disabled) {
+  background: #0d7a72;
+}
+
+.btn-add-activity:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.activity-profile-warning {
+  font-size: 0.82rem;
+  color: #e53e3e;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 7px;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+}
+
+.activity-profile-warning a {
+  color: #c53030;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.activity-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.9rem;
+}
+
+.activity-form-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.activity-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 140px;
+}
+
+.activity-form-group--sm {
+  flex: 0 0 110px;
+  min-width: 90px;
+}
+
+.activity-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.activity-select,
+.activity-duration-input,
+.activity-notes-input {
+  padding: 0.45rem 0.65rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 0.88rem;
+  color: #333;
+  background: white;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.activity-select:focus,
+.activity-duration-input:focus,
+.activity-notes-input:focus {
+  outline: none;
+  border-color: #11998e;
+}
+
+.activity-preview {
+  font-size: 0.85rem;
+  color: #11998e;
+  font-weight: 600;
+  margin: 0;
+}
+
+.activity-preview--warn {
+  color: #e67e22;
+  font-weight: 400;
+}
+
+.btn-save-activity {
+  padding: 0.55rem;
+  border: none;
+  border-radius: 7px;
+  background: #11998e;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-save-activity:hover:not(:disabled) {
+  background: #0d7a72;
+}
+
+.btn-save-activity:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.activity-empty {
+  font-size: 0.88rem;
+  color: #aaa;
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.activity-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.activity-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.activity-item-meta {
+  font-size: 0.78rem;
+  color: #11998e;
+  font-weight: 600;
+}
+
+.activity-item-notes {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.btn-delete-activity {
+  background: #fc8181;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.btn-delete-activity:hover {
+  background: #f56565;
+  transform: scale(1.1);
+}
+
+/* =========================================================
+   Steps Overview Header (with source badge)
+   ========================================================= */
+
+.steps-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.steps-overview-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #555;
+  font-weight: 600;
+}
+
+.source-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.source-badge.source-fitbit {
+  background: #e6f7f5;
+  color: #0d7a72;
+  border: 1px solid #b2e4df;
+}
+
+.source-badge.source-stored {
+  background: #f0f4ff;
+  color: #4a6fa5;
+  border: 1px solid #c5d3ef;
+}
+
+.source-badge.source-manual {
+  background: #f7f7f7;
+  color: #888;
+  border: 1px solid #ddd;
+}
+
+/* =========================================================
+   Fitbit Card
+   ========================================================= */
+
+.fitbit-card {
+  padding: 1.25rem 1.5rem;
+}
+
+.fitbit-connected-row,
+.fitbit-disconnected-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.fitbit-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fitbit-dot.connected    { background: #38ef7d; }
+.fitbit-dot.disconnected { background: #fc8181; }
+
+.fitbit-status-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.btn-fitbit-connect,
+.btn-fitbit-update {
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-fitbit-connect {
+  background: #11998e;
+  color: white;
+}
+
+.btn-fitbit-connect:hover {
+  background: #0d7a72;
+}
+
+.btn-fitbit-update {
+  background: #e2e8f0;
+  color: #555;
+}
+
+.btn-fitbit-update:hover {
+  background: #cbd5e0;
+}
+
+.fitbit-token-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fitbit-form-hint {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0 0 0.25rem;
+}
+
+.fitbit-token-error {
+  font-size: 0.82rem;
+  color: #e53e3e;
+  margin: 0;
+}
+
+.fitbit-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.fitbit-token-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.65rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-family: monospace;
+  resize: vertical;
+  color: #333;
+  transition: border-color 0.2s;
+}
+
+.fitbit-token-input:focus {
+  outline: none;
+  border-color: #11998e;
+}
+
+.fitbit-form-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.btn-fitbit-save {
+  flex: 1;
+  padding: 0.55rem;
+  border: none;
+  border-radius: 7px;
+  background: #11998e;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-fitbit-save:hover:not(:disabled) {
+  background: #0d7a72;
+}
+
+.btn-fitbit-save:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-fitbit-cancel {
+  padding: 0.55rem 1rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  background: white;
+  color: #666;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-fitbit-cancel:hover {
+  background: #f7fafc;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  .fitness-content {
+    grid-template-columns: 1fr;
+  }
+
+  .fitness-left {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .fitness-header h1 {
+    font-size: 2rem;
+  }
+
+  .weekly-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}

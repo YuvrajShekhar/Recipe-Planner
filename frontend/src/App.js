@@ -22,6 +22,7 @@ import Pantry from './pages/Pantry';
 import Favorites from './pages/Favorites';
 import Profile from './pages/Profile';
 import Health from './pages/Health';
+import Fitness from './pages/Fitness';
 import NotFound from './pages/NotFound';
 
 // Styles
@@ -83,6 +84,14 @@ function App() {
                                     element={
                                         <ProtectedRoute>
                                             <Health />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/fitness"
+                                    element={
+                                        <ProtectedRoute>
+                                            <Fitness />
                                         </ProtectedRoute>
                                     }
                                 />

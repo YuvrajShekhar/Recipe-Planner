@@ -135,4 +135,42 @@ export const healthAPI = {
     getMonthlySummary: (month, year) => API.get('/health/monthly-summary/', { params: { month, year } }),
 };
 
+// ==================== FITNESS APIs ====================
+
+export const fitnessAPI = {
+    // Save steps for a date (upsert — creates or updates)
+    saveLog: (data) => API.post('/fitness/logs/', data),
+
+    // Get the step log for a specific date (returns { steps: 0 } if no entry)
+    getDaily: (date) => API.get('/fitness/daily/', { params: { date } }),
+
+    // Get all step logs for a month
+    getMonthlySummary: (month, year) => API.get('/fitness/monthly-summary/', { params: { month, year } }),
+
+    // Delete a specific log entry
+    deleteLog: (id) => API.delete(`/fitness/logs/${id}/`),
+
+    // Fitbit: store OAuth tokens
+    setupFitbit: (data) => API.post('/fitness/fitbit/setup/', data),
+
+    // Fitbit: sync steps for a date from Fitbit (or return stored value)
+    syncSteps: (date) => API.get('/fitness/sync/', { params: { date } }),
+};
+
+// ==================== ACTIVITY (GYM / EXERCISE) APIs ====================
+
+export const activityAPI = {
+    // List activities for a date
+    getByDate: (date) => API.get('/fitness/activities/', { params: { date } }),
+
+    // Log a new activity (backend calculates calories)
+    create: (data) => API.post('/fitness/activities/', data),
+
+    // Delete an activity entry
+    delete: (id) => API.delete(`/fitness/activities/${id}/`),
+
+    // Daily summary: total calories burned + list of activities
+    getDailySummary: (date) => API.get('/fitness/activities/daily/', { params: { date } }),
+};
+
 export default API;

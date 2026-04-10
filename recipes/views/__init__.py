@@ -70,3 +70,18 @@ from .health_views import (
     nutrition_daily_summary,
     nutrition_monthly_summary,
 )
+
+from .fitness_views import (
+    fitness_log_list,
+    fitness_log_detail,
+    fitness_daily,
+    fitness_monthly_summary,
+    setup_fitbit,
+    sync_fitbit_steps,
+)
+
+from .activity_views import (
+    activity_log_list,
+    activity_log_detail,
+    activity_daily_summary,
+)

@@ -68,4 +68,17 @@ urlpatterns = [
     path('health/logs/<int:pk>/', views.nutrition_log_detail, name='nutrition-log-detail'),
     path('health/daily-summary/', views.nutrition_daily_summary, name='nutrition-daily-summary'),
     path('health/monthly-summary/', views.nutrition_monthly_summary, name='nutrition-monthly-summary'),
+
+    # Activity endpoints
+    path('fitness/activities/', views.activity_log_list, name='activity-log-list'),
+    path('fitness/activities/<int:pk>/', views.activity_log_detail, name='activity-log-detail'),
+    path('fitness/activities/daily/', views.activity_daily_summary, name='activity-daily-summary'),
+
+    # Fitness endpoints
+    path('fitness/logs/', views.fitness_log_list, name='fitness-log-list'),
+    path('fitness/logs/<int:pk>/', views.fitness_log_detail, name='fitness-log-detail'),
+    path('fitness/daily/', views.fitness_daily, name='fitness-daily'),
+    path('fitness/monthly-summary/', views.fitness_monthly_summary, name='fitness-monthly-summary'),
+    path('fitness/fitbit/setup/', views.setup_fitbit, name='fitbit-setup'),
+    path('fitness/sync/', views.sync_fitbit_steps, name='fitbit-sync'),
 ]

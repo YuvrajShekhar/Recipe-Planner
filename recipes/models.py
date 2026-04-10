@@ -236,3 +236,117 @@ class DailyNutritionLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.dish_name} on {self.date}"
+
+
+class FitnessLog(models.Model):
+    """Tracks daily fitness activity — one entry per user per day"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fitness_logs')
+    date = models.DateField(help_text="Date of the fitness activity")
+    steps = models.PositiveIntegerField(default=0, help_text="Number of steps walked")
+    notes = models.TextField(blank=True, help_text="Optional notes")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Fitness Log"
+        verbose_name_plural = "Fitness Logs"
+        indexes = [
+            models.Index(fields=['user', 'date']),
+        ]
+        unique_together = [['user', 'date']]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.steps} steps on {self.date}"
+
+
+class FitbitCredentials(models.Model):
+    """Stores Fitbit OAuth 2.0 tokens per user"""
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='fitbit_credentials')
+    access_token = models.TextField()
+    refresh_token = models.TextField()
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Fitbit credentials"
+
+
+class UserProfile(models.Model):
+    """Stores body metrics for a user — used for calorie burn calculations"""
+
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    age = models.PositiveIntegerField(null=True, blank=True, help_text="Age in years")
+    height_cm = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        help_text="Height in centimetres"
+    )
+    weight_kg = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        help_text="Weight in kilograms"
+    )
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s profile"
+
+    def bmr(self):
+        """Harris-Benedict BMR in kcal/day. Returns None if any field is missing."""
+        if not all([self.weight_kg, self.height_cm, self.age, self.gender]):
+            return None
+        w = float(self.weight_kg)
+        h = float(self.height_cm)
+        a = float(self.age)
+        if self.gender == 'male':
+            return 88.362 + (13.397 * w) + (4.799 * h) - (5.677 * a)
+        return 447.593 + (9.247 * w) + (3.098 * h) - (4.330 * a)
+
+
+# MET values (Compendium of Physical Activities)
+MET_VALUES = {
+    'bouldering':               7.5,
+    'weight_training_moderate': 3.5,
+    'weight_training_vigorous': 6.0,
+    'cardio_moderate':          7.0,
+    'cardio_vigorous':          10.0,
+    'circuit_training':         8.0,
+}
+
+
+class ActivityLog(models.Model):
+    """Logs a single exercise session for a user"""
+
+    ACTIVITY_CHOICES = [
+        ('bouldering',               'Bouldering / Rock Climbing'),
+        ('weight_training_moderate', 'Gym – Weight Training (moderate)'),
+        ('weight_training_vigorous', 'Gym – Weight Training (vigorous)'),
+        ('cardio_moderate',          'Cardio (moderate)'),
+        ('cardio_vigorous',          'Cardio (vigorous)'),
+        ('circuit_training',         'Circuit Training'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_logs')
+    date = models.DateField(help_text="Date of the activity")
+    activity_type = models.CharField(max_length=30, choices=ACTIVITY_CHOICES)
+    duration_minutes = models.PositiveIntegerField(help_text="Duration in minutes")
+    calories_burned = models.DecimalField(
+        max_digits=7, decimal_places=1,
+        help_text="Calories burned — calculated via Harris-Benedict + MET"
+    )
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        indexes = [models.Index(fields=['user', 'date'])]
+
+    def __str__(self):
+        return f"{self.user.username} — {self.get_activity_type_display()} on {self.date}"

@@ -94,6 +94,15 @@ const Navbar = () => {
                                     Health
                                 </Link>
                             </li>
+                            <li>
+                                <Link
+                                    to="/fitness"
+                                    className={isActive('/fitness')}
+                                    onClick={closeMobileMenu}
+                                >
+                                    Fitness
+                                </Link>
+                            </li>
                             <li className="navbar-user">
                                 <Link
                                     to="/profile"

@@ -18,9 +18,22 @@ const Profile = () => {
     const [stats, setStats] = useState({ pantryCount: 0, favoritesCount: 0 });
     const [statsLoading, setStatsLoading] = useState(true);
 
+    // Body metrics state
+    const [editingMetrics, setEditingMetrics] = useState(false);
+    const [metricsForm, setMetricsForm] = useState({ age: '', height_cm: '', weight_kg: '', gender: '' });
+    const [metricsLoading, setMetricsLoading] = useState(false);
+    const [metricsMessage, setMetricsMessage] = useState({ type: '', text: '' });
+
     useEffect(() => {
         if (user) {
             setFormData({ email: user.email || '' });
+            const p = user.profile || {};
+            setMetricsForm({
+                age:       p.age       ?? '',
+                height_cm: p.height_cm ?? '',
+                weight_kg: p.weight_kg ?? '',
+                gender:    p.gender    ?? '',
+            });
             loadStats();
         }
     }, [user]);
@@ -76,6 +89,45 @@ const Profile = () => {
         setFormData({ email: user.email || '' });
         setEditing(false);
         setMessage({ type: '', text: '' });
+    };
+
+    const handleMetricsChange = (e) => {
+        setMetricsForm({ ...metricsForm, [e.target.name]: e.target.value });
+        setMetricsMessage({ type: '', text: '' });
+    };
+
+    const handleMetricsSubmit = async (e) => {
+        e.preventDefault();
+        setMetricsLoading(true);
+        setMetricsMessage({ type: '', text: '' });
+        try {
+            await updateProfile({
+                profile: {
+                    age:       metricsForm.age       || null,
+                    height_cm: metricsForm.height_cm || null,
+                    weight_kg: metricsForm.weight_kg || null,
+                    gender:    metricsForm.gender    || null,
+                },
+            });
+            setMetricsMessage({ type: 'success', text: 'Body metrics updated!' });
+            setEditingMetrics(false);
+        } catch (err) {
+            setMetricsMessage({ type: 'error', text: err.response?.data?.message || 'Failed to update metrics' });
+        } finally {
+            setMetricsLoading(false);
+        }
+    };
+
+    const cancelMetricsEdit = () => {
+        const p = user?.profile || {};
+        setMetricsForm({
+            age:       p.age       ?? '',
+            height_cm: p.height_cm ?? '',
+            weight_kg: p.weight_kg ?? '',
+            gender:    p.gender    ?? '',
+        });
+        setEditingMetrics(false);
+        setMetricsMessage({ type: '', text: '' });
     };
 
     return (
@@ -174,6 +226,147 @@ const Profile = () => {
                                             })
                                             : 'N/A'
                                         }
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Body Metrics Card */}
+                <div className="card">
+                    <div className="card-body">
+                        <div className="card-header-flex">
+                            <h3>Body Metrics</h3>
+                            {!editingMetrics && (
+                                <button
+                                    className="btn btn-small btn-outline"
+                                    onClick={() => setEditingMetrics(true)}
+                                >
+                                    ✏️ Edit
+                                </button>
+                            )}
+                        </div>
+
+                        <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>
+                            Used to calculate personalised calorie burn in the Fitness section.
+                        </p>
+
+                        {metricsMessage.text && (
+                            <Alert
+                                type={metricsMessage.type}
+                                message={metricsMessage.text}
+                                onClose={() => setMetricsMessage({ type: '', text: '' })}
+                            />
+                        )}
+
+                        {editingMetrics ? (
+                            <form onSubmit={handleMetricsSubmit}>
+                                <div className="form-group">
+                                    <label htmlFor="gender">Gender</label>
+                                    <select
+                                        id="gender"
+                                        name="gender"
+                                        className="form-control"
+                                        value={metricsForm.gender}
+                                        onChange={handleMetricsChange}
+                                    >
+                                        <option value="">Select gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="age">Age (years)</label>
+                                    <input
+                                        type="number"
+                                        id="age"
+                                        name="age"
+                                        className="form-control"
+                                        min="1"
+                                        max="120"
+                                        placeholder="e.g. 26"
+                                        value={metricsForm.age}
+                                        onChange={handleMetricsChange}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="height_cm">Height (cm)</label>
+                                    <input
+                                        type="number"
+                                        id="height_cm"
+                                        name="height_cm"
+                                        className="form-control"
+                                        min="50"
+                                        max="300"
+                                        step="0.1"
+                                        placeholder="e.g. 179"
+                                        value={metricsForm.height_cm}
+                                        onChange={handleMetricsChange}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="weight_kg">Weight (kg)</label>
+                                    <input
+                                        type="number"
+                                        id="weight_kg"
+                                        name="weight_kg"
+                                        className="form-control"
+                                        min="1"
+                                        max="500"
+                                        step="0.1"
+                                        placeholder="e.g. 75"
+                                        value={metricsForm.weight_kg}
+                                        onChange={handleMetricsChange}
+                                    />
+                                </div>
+                                <div className="form-actions">
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={cancelMetricsEdit}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary"
+                                        disabled={metricsLoading}
+                                    >
+                                        {metricsLoading ? 'Saving...' : 'Save Metrics'}
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            <div className="profile-info">
+                                <div className="info-row">
+                                    <span className="info-label">⚧ Gender</span>
+                                    <span className="info-value" style={{ textTransform: 'capitalize' }}>
+                                        {user?.profile?.gender || <span style={{ color: '#fc8181' }}>Not set</span>}
+                                    </span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">🎂 Age</span>
+                                    <span className="info-value">
+                                        {user?.profile?.age
+                                            ? `${user.profile.age} yrs`
+                                            : <span style={{ color: '#fc8181' }}>Not set</span>}
+                                    </span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">📏 Height</span>
+                                    <span className="info-value">
+                                        {user?.profile?.height_cm
+                                            ? `${user.profile.height_cm} cm`
+                                            : <span style={{ color: '#fc8181' }}>Not set</span>}
+                                    </span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">⚖️ Weight</span>
+                                    <span className="info-value">
+                                        {user?.profile?.weight_kg
+                                            ? `${user.profile.weight_kg} kg`
+                                            : <span style={{ color: '#fc8181' }}>Not set</span>}
                                     </span>
                                 </div>
                             </div>

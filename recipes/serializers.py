@@ -1,15 +1,34 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Ingredient, Recipe, RecipeIngredient, Pantry, Favorite, IngredientNutrition, DailyNutritionLog
+from .models import (
+    Ingredient, Recipe, RecipeIngredient, Pantry, Favorite,
+    IngredientNutrition, DailyNutritionLog, FitnessLog,
+    UserProfile, ActivityLog,
+)
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Serializer for User model"""
-    
+    """Serializer for User model — includes body-metrics profile (read-only nested)"""
+
+    profile = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'date_joined']
+        fields = ['id', 'username', 'email', 'date_joined', 'profile']
         read_only_fields = ['id', 'date_joined']
+
+    def get_profile(self, obj):
+        try:
+            p = obj.profile
+            return {
+                'age':       p.age,
+                'height_cm': str(p.height_cm) if p.height_cm is not None else None,
+                'weight_kg': str(p.weight_kg) if p.weight_kg is not None else None,
+                'gender':    p.gender,
+            }
+        except Exception:
+            # Catches DoesNotExist (no profile row) and OperationalError (table missing)
+            return {'age': None, 'height_cm': None, 'weight_kg': None, 'gender': None}
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -264,6 +283,17 @@ class DailyNutritionLogSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
 
+class FitnessLogSerializer(serializers.ModelSerializer):
+    """Serializer for FitnessLog — daily step count"""
+
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = FitnessLog
+        fields = ['id', 'user', 'date', 'steps', 'notes', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+
+
 class DailyNutritionSummarySerializer(serializers.Serializer):
     """Serializer for daily nutrition summary aggregates"""
 
@@ -275,3 +305,17 @@ class DailyNutritionSummarySerializer(serializers.Serializer):
     total_fiber = serializers.DecimalField(max_digits=10, decimal_places=2)
     entry_count = serializers.IntegerField()
     entries = DailyNutritionLogSerializer(many=True, read_only=True)
+
+
+class ActivityLogSerializer(serializers.ModelSerializer):
+    """Serializer for ActivityLog — a single exercise session"""
+
+    activity_label = serializers.CharField(source='get_activity_type_display', read_only=True)
+
+    class Meta:
+        model = ActivityLog
+        fields = [
+            'id', 'date', 'activity_type', 'activity_label',
+            'duration_minutes', 'calories_burned', 'notes', 'created_at',
+        ]
+        read_only_fields = ['id', 'activity_label', 'created_at']

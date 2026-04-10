@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from ..serializers import UserSerializer, UserRegistrationSerializer
+from ..models import UserProfile
 
 
 # ==================== API ROOT ====================
@@ -143,14 +144,26 @@ def user_profile(request):
     
     elif request.method == 'PUT':
         serializer = UserSerializer(user, data=request.data, partial=True)
-        
+
         if serializer.is_valid():
             serializer.save()
+
+            # Handle body-metrics profile fields
+            profile_data = request.data.get('profile', {})
+            if profile_data:
+                profile, _ = UserProfile.objects.get_or_create(user=user)
+                allowed = {'age', 'height_cm', 'weight_kg', 'gender'}
+                for field in allowed:
+                    if field in profile_data:
+                        val = profile_data[field]
+                        setattr(profile, field, val if val not in (None, '', 'null') else None)
+                profile.save()
+
             return Response({
                 'message': 'Profile updated successfully',
-                'user': serializer.data
+                'user': UserSerializer(user).data,
             }, status=status.HTTP_200_OK)
-        
+
         return Response({
             'message': 'Update failed',
             'errors': serializer.errors
