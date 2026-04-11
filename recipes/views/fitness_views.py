@@ -11,17 +11,29 @@ import requests as http_requests
 from ..models import FitnessLog, FitbitCredentials
 from ..serializers import FitnessLogSerializer
 
-# Fitbit app client ID (from JWT aud claim)
-FITBIT_CLIENT_ID = '23VD8D'
-FITBIT_API_BASE  = 'https://api.fitbit.com'
+# Fitbit OAuth 2.0 credentials
+FITBIT_CLIENT_ID     = '23VD8D'
+FITBIT_CLIENT_SECRET = '52f20fdaaff852df3839f4f0500ac969'
+FITBIT_API_BASE      = 'https://api.fitbit.com'
 
 
 # ── Fitbit token helper ───────────────────────────────────────────────────────
 
 def _refresh_fitbit_token(creds):
-    """Try to refresh the Fitbit access token using the stored refresh token.
-    Returns True on success and saves updated tokens to DB."""
-    auth_header = base64.b64encode(f'{FITBIT_CLIENT_ID}:'.encode()).decode()
+    """
+    Refresh the Fitbit access token using the stored refresh token.
+    Uses Basic auth with client_id:client_secret (confidential-client flow).
+    Returns True on success and persists updated tokens to DB.
+    Returns False on any failure (caller should fall back gracefully).
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Fitbit confidential-client: Basic base64(client_id:client_secret)
+    auth_header = base64.b64encode(
+        f'{FITBIT_CLIENT_ID}:{FITBIT_CLIENT_SECRET}'.encode()
+    ).decode()
+
     try:
         resp = http_requests.post(
             f'{FITBIT_API_BASE}/oauth2/token',
@@ -30,24 +42,35 @@ def _refresh_fitbit_token(creds):
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             data={
-                'grant_type': 'refresh_token',
+                'grant_type':    'refresh_token',
                 'refresh_token': creds.refresh_token,
-                'client_id': FITBIT_CLIENT_ID,
+                'client_id':     FITBIT_CLIENT_ID,
             },
             timeout=10,
         )
+
         if resp.status_code == 200:
-            data = resp.json()
             from django.utils import timezone as dj_tz
             from datetime import timedelta
+            data = resp.json()
             creds.access_token  = data['access_token']
+            # Fitbit rotates the refresh token — always save the new one
             creds.refresh_token = data.get('refresh_token', creds.refresh_token)
             expires_in          = data.get('expires_in', 28800)
             creds.expires_at    = dj_tz.now() + timedelta(seconds=expires_in)
             creds.save()
+            logger.info('Fitbit token refreshed for user %s', creds.user_id)
             return True
-    except Exception:
-        pass
+
+        # Log the Fitbit error response to help with debugging
+        logger.warning(
+            'Fitbit token refresh failed: status=%s body=%s',
+            resp.status_code, resp.text[:300],
+        )
+
+    except Exception as exc:
+        logger.exception('Fitbit token refresh exception: %s', exc)
+
     return False
 
 
@@ -362,9 +385,10 @@ def sync_fitbit_steps(request):
             'fitbit_connected': False,
         })
 
-    # Refresh token if expired
+    # Proactively refresh if the token expires within the next 5 minutes
     from django.utils import timezone as dj_tz
-    if creds.expires_at and creds.expires_at <= dj_tz.now():
+    from datetime import timedelta
+    if creds.expires_at and creds.expires_at <= dj_tz.now() + timedelta(minutes=5):
         _refresh_fitbit_token(creds)
         creds.refresh_from_db()
 
@@ -373,10 +397,12 @@ def sync_fitbit_steps(request):
     steps, ok = _fitbit_fetch_steps(creds.access_token, date_str)
 
     if not ok:
-        # Try refreshing once and retry
+        # Token may have expired mid-request — refresh once and retry
         if _refresh_fitbit_token(creds):
             creds.refresh_from_db()
             steps, ok = _fitbit_fetch_steps(creds.access_token, date_str)
+
+    token_expires_at = creds.expires_at.isoformat() if creds.expires_at else None
 
     if ok and steps is not None:
         notes = existing_log.notes if existing_log else ''
@@ -392,6 +418,7 @@ def sync_fitbit_steps(request):
             'notes':            log.notes,
             'source':           'fitbit',
             'fitbit_connected': True,
+            'token_expires_at': token_expires_at,
         })
 
     # Fitbit call failed — fall back to DB or zero-state
@@ -403,6 +430,7 @@ def sync_fitbit_steps(request):
             'notes':            existing_log.notes,
             'source':           'stored',
             'fitbit_connected': True,
+            'token_expires_at': token_expires_at,
         })
 
     return Response({
@@ -412,4 +440,5 @@ def sync_fitbit_steps(request):
         'notes':            '',
         'source':           'manual',
         'fitbit_connected': True,
+        'token_expires_at': token_expires_at,
     })

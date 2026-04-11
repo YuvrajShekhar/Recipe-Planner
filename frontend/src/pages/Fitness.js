@@ -260,7 +260,14 @@ const Fitness = () => {
               {fitbitConnected ? (
                 <div className="fitbit-connected-row">
                   <span className="fitbit-dot connected" />
-                  <span className="fitbit-status-text">Fitbit connected</span>
+                  <div className="fitbit-status-text">
+                    <span>Fitbit connected</span>
+                    {dailyLog?.token_expires_at && (
+                      <span className="fitbit-expiry">
+                        token expires {new Date(dailyLog.token_expires_at).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
                   <button
                     className="btn-fitbit-update"
                     onClick={() => setShowFitbitForm(f => !f)}
