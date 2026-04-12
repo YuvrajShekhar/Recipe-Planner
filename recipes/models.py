@@ -244,6 +244,10 @@ class FitnessLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fitness_logs')
     date = models.DateField(help_text="Date of the fitness activity")
     steps = models.PositiveIntegerField(default=0, help_text="Number of steps walked")
+    weight_kg = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True,
+        help_text="Body weight recorded on this day (kg)"
+    )
     notes = models.TextField(blank=True, help_text="Optional notes")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

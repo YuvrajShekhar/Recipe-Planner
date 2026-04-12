@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fitnessAPI, healthAPI, activityAPI, authAPI } from '../services/api';
 import MonthCalendar from '../components/health/MonthCalendar';
 import StepsPanel from '../components/fitness/StepsPanel';
@@ -117,7 +117,7 @@ const Fitness = () => {
     setSelectedDate(date);
   };
 
-  const handleSave = async (steps, notes) => {
+  const handleSave = async (steps, notes, weightKg) => {
     try {
       setSaving(true);
       setError(null);
@@ -125,6 +125,7 @@ const Fitness = () => {
         date: toLocalDate(selectedDate),
         steps,
         notes,
+        weight_kg: weightKg,
       });
       setDailyLog(prev => ({ ...res.data, source: 'manual', fitbit_connected: prev?.fitbit_connected }));
       // Refresh calendar dots
@@ -222,6 +223,7 @@ const Fitness = () => {
   const caloriesConsumed = Math.round(parseFloat(healthSummary?.total_calories ?? 0));
   const netBalance   = caloriesConsumed - totalBurnt;
   const source       = dailyLog?.source ?? 'manual';
+  const weightKg     = dailyLog?.weight_kg != null ? parseFloat(dailyLog.weight_kg) : null;
 
   return (
     <div className="fitness-page">
@@ -415,6 +417,19 @@ const Fitness = () => {
                 <p className="cal-profile-hint">
                   Update your <a href="/profile">body metrics</a> for a personalised BMR.
                 </p>
+              )}
+            </div>
+
+            {/* Weight card */}
+            <div className="fitness-card weight-card">
+              <h3>Body Weight</h3>
+              {weightKg != null ? (
+                <div className="weight-display">
+                  <span className="weight-display-val">{weightKg.toFixed(1)}</span>
+                  <span className="weight-display-unit">kg</span>
+                </div>
+              ) : (
+                <p className="weight-display-empty">No weight logged for this day</p>
               )}
             </div>
 

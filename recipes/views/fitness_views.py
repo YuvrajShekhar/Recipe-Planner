@@ -116,6 +116,7 @@ def fitness_log_list(request):
         date_str = request.data.get('date')
         steps = request.data.get('steps', 0)
         notes = request.data.get('notes', '')
+        weight_kg_raw = request.data.get('weight_kg', None)
 
         if not date_str:
             return Response({'error': 'date is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -135,11 +136,21 @@ def fitness_log_list(request):
         except (ValueError, TypeError):
             return Response({'error': 'steps must be a non-negative integer'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Validate weight_kg if provided
+        weight_kg = None
+        if weight_kg_raw not in (None, ''):
+            try:
+                weight_kg = float(weight_kg_raw)
+                if weight_kg <= 0 or weight_kg > 500:
+                    raise ValueError
+            except (ValueError, TypeError):
+                return Response({'error': 'weight_kg must be a positive number'}, status=status.HTTP_400_BAD_REQUEST)
+
         # Upsert: update if exists, create if not
         log, created = FitnessLog.objects.update_or_create(
             user=request.user,
             date=log_date,
-            defaults={'steps': steps, 'notes': notes}
+            defaults={'steps': steps, 'notes': notes, 'weight_kg': weight_kg}
         )
 
         serializer = FitnessLogSerializer(log)
@@ -360,6 +371,7 @@ def sync_fitbit_steps(request):
                 'id':               existing_log.id,
                 'date':             existing_log.date.isoformat(),
                 'steps':            existing_log.steps,
+                'weight_kg':        str(existing_log.weight_kg) if existing_log.weight_kg is not None else None,
                 'notes':            existing_log.notes,
                 'source':           'manual',
                 'fitbit_connected': False,
@@ -368,6 +380,7 @@ def sync_fitbit_steps(request):
             'id':               None,
             'date':             query_date.isoformat(),
             'steps':            0,
+            'weight_kg':        None,
             'notes':            '',
             'source':           'manual',
             'fitbit_connected': False,
@@ -394,15 +407,17 @@ def sync_fitbit_steps(request):
 
     if ok and steps is not None:
         notes = existing_log.notes if existing_log else ''
+        weight_kg = existing_log.weight_kg if existing_log else None
         log, _ = FitnessLog.objects.update_or_create(
             user=request.user,
             date=query_date,
-            defaults={'steps': steps, 'notes': notes},
+            defaults={'steps': steps, 'notes': notes, 'weight_kg': weight_kg},
         )
         return Response({
             'id':               log.id,
             'date':             log.date.isoformat(),
             'steps':            log.steps,
+            'weight_kg':        str(log.weight_kg) if log.weight_kg is not None else None,
             'notes':            log.notes,
             'source':           'fitbit',
             'fitbit_connected': True,
@@ -415,6 +430,7 @@ def sync_fitbit_steps(request):
             'id':               existing_log.id,
             'date':             existing_log.date.isoformat(),
             'steps':            existing_log.steps,
+            'weight_kg':        str(existing_log.weight_kg) if existing_log.weight_kg is not None else None,
             'notes':            existing_log.notes,
             'source':           'stored',
             'fitbit_connected': True,
@@ -425,6 +441,7 @@ def sync_fitbit_steps(request):
         'id':               None,
         'date':             query_date.isoformat(),
         'steps':            0,
+        'weight_kg':        None,
         'notes':            '',
         'source':           'manual',
         'fitbit_connected': True,

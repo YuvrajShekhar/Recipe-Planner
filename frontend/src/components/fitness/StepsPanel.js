@@ -1,23 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import '../../styles/Fitness.css';
 
 const StepsPanel = ({ date, dailyLog, onSave, onDelete, saving, loading }) => {
   const [steps, setSteps] = useState('');
+  const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
   const [edited, setEdited] = useState(false);
 
   // Sync form when date or log changes
   useEffect(() => {
     setSteps(dailyLog?.steps != null ? String(dailyLog.steps) : '');
+    setWeight(dailyLog?.weight_kg != null ? String(dailyLog.weight_kg) : '');
     setNotes(dailyLog?.notes || '');
     setEdited(false);
   }, [dailyLog, date]);
 
   const handleStepsChange = (e) => {
     const val = e.target.value;
-    // Allow empty string while typing, or non-negative integers only
     if (val === '' || /^\d+$/.test(val)) {
       setSteps(val);
+      setEdited(true);
+    }
+  };
+
+  const handleWeightChange = (e) => {
+    const val = e.target.value;
+    // Allow empty, digits, and one decimal point
+    if (val === '' || /^\d*\.?\d*$/.test(val)) {
+      setWeight(val);
       setEdited(true);
     }
   };
@@ -30,7 +40,8 @@ const StepsPanel = ({ date, dailyLog, onSave, onDelete, saving, loading }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const numSteps = steps === '' ? 0 : parseInt(steps, 10);
-    onSave(numSteps, notes);
+    const weightKg = weight === '' ? null : parseFloat(weight);
+    onSave(numSteps, notes, weightKg);
     setEdited(false);
   };
 
@@ -74,6 +85,20 @@ const StepsPanel = ({ date, dailyLog, onSave, onDelete, saving, loading }) => {
             <span className="steps-input-label">steps</span>
           </div>
 
+          <div className="weight-input-row">
+            <input
+              type="number"
+              className="weight-number-input"
+              value={weight}
+              onChange={handleWeightChange}
+              placeholder="—"
+              min="0"
+              max="500"
+              step="0.1"
+            />
+            <span className="steps-input-label">kg body weight</span>
+          </div>
+
           <div className="form-group" style={{ marginTop: '0.75rem' }}>
             <label>Notes (optional)</label>
             <textarea
@@ -89,7 +114,7 @@ const StepsPanel = ({ date, dailyLog, onSave, onDelete, saving, loading }) => {
             className={`btn-save-steps ${edited ? 'unsaved' : ''}`}
             disabled={saving}
           >
-            {saving ? 'Saving...' : hasEntry ? 'Update Steps' : 'Save Steps'}
+            {saving ? 'Saving...' : hasEntry ? 'Update' : 'Save'}
           </button>
         </form>
       )}

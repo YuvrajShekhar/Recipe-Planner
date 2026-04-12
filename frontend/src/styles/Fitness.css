@@ -142,6 +142,71 @@
   font-weight: 600;
 }
 
+.weight-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+.weight-number-input {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+  box-sizing: border-box;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.4rem 0.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  color: #333;
+  -moz-appearance: textfield;
+  transition: border-color 0.2s;
+}
+
+.weight-number-input::-webkit-outer-spin-button,
+.weight-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.weight-number-input:focus {
+  outline: none;
+  border-color: #11998e;
+}
+
+.weight-card {
+  text-align: center;
+}
+
+.weight-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.weight-display-val {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #11998e;
+}
+
+.weight-display-unit {
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.weight-display-empty {
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
 /* reuse .form-group from Health.css — textarea already styled */
 
 .btn-save-steps {
