@@ -351,21 +351,9 @@ def sync_fitbit_steps(request):
     except FitbitCredentials.DoesNotExist:
         fitbit_connected = False
 
-    # For past days that already have a log entry, return immediately (no re-fetch)
-    today = date.today()
     existing_log = FitnessLog.objects.filter(user=request.user, date=query_date).first()
 
-    if existing_log and query_date < today:
-        return Response({
-            'id':               existing_log.id,
-            'date':             existing_log.date.isoformat(),
-            'steps':            existing_log.steps,
-            'notes':            existing_log.notes,
-            'source':           'stored',
-            'fitbit_connected': fitbit_connected,
-        })
-
-    # No Fitbit credentials — return DB value or zero-state
+    # No Fitbit credentials — return DB value or zero-state without hitting the API
     if not fitbit_connected:
         if existing_log:
             return Response({
