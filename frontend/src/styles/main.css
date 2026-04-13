@@ -5822,6 +5822,13 @@ textarea.form-control {
     margin: 0;
 }
 
+.image-upload-progress {
+    font-size: 0.85rem;
+    color: #11998e;
+    margin: 0.25rem 0 0;
+    font-weight: 500;
+}
+
 /* RecipeEdit public toggle */
 .re-toggle-label {
     display: flex;

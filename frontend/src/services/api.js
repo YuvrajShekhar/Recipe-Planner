@@ -54,13 +54,6 @@ export const recipeAPI = {
     getMyRecipes: () => API.get('/recipes/my-recipes/'),
     getByUser: (userId) => API.get(`/recipes/user/${userId}/`),
     search: (query) => API.get('/recipes/', { params: { search: query } }),
-    uploadImage: (file) => {
-        const formData = new FormData();
-        formData.append('image', file);
-        return API.post('/upload/image/', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-        });
-    },
 };
 
 // ==================== MATCHING APIs ====================

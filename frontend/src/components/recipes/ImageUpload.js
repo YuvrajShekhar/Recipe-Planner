@@ -1,19 +1,29 @@
-import { useState, useRef } from 'react';
-import { recipeAPI } from '../../services/api';
+import { useState, useRef, useEffect } from 'react';
+
+const MAX_SIZE_MB = 5;
 
 /**
- * ImageUpload — drop-in replacement for the image URL text input.
+ * ImageUpload — converts the selected image to a base64 data URL
+ * and passes it to onUploaded(). No server upload needed.
+ *
  * Props:
- *   currentUrl  — the current image_url value (string | null)
- *   onUploaded  — called with the new URL string after a successful upload
+ *   currentUrl  — existing image_url value (string | null)
+ *   onUploaded  — called with the base64 data URL string
  */
 const ImageUpload = ({ currentUrl, onUploaded }) => {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
   const [preview, setPreview] = useState(currentUrl || '');
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
   const inputRef = useRef();
 
-  const handleFileChange = async (e) => {
+  // Sync when parent loads recipe asynchronously
+  useEffect(() => {
+    if (currentUrl && currentUrl !== preview) {
+      setPreview(currentUrl);
+    }
+  }, [currentUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -22,30 +32,29 @@ const ImageUpload = ({ currentUrl, onUploaded }) => {
       setError('Only JPG and PNG files are allowed.');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be under 5 MB.');
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      setError(`Image must be under ${MAX_SIZE_MB} MB.`);
       return;
     }
 
-    // Show local preview immediately
-    const localPreview = URL.createObjectURL(file);
-    setPreview(localPreview);
     setError('');
+    setProcessing(true);
 
-    try {
-      setUploading(true);
-      const res = await recipeAPI.uploadImage(file);
-      const url = res.data.url;
-      setPreview(url);
-      onUploaded(url);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Upload failed. Please try again.');
-      setPreview(currentUrl || '');
-    } finally {
-      setUploading(false);
-      // Reset input so the same file can be re-selected if needed
-      if (inputRef.current) inputRef.current.value = '';
-    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target.result;
+      setPreview(dataUrl);
+      onUploaded(dataUrl);
+      setProcessing(false);
+    };
+    reader.onerror = () => {
+      setError('Failed to read file. Please try again.');
+      setProcessing(false);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset so same file can be re-selected
+    if (inputRef.current) inputRef.current.value = '';
   };
 
   const handleRemove = () => {
@@ -59,21 +68,24 @@ const ImageUpload = ({ currentUrl, onUploaded }) => {
       {preview ? (
         <div className="image-preview-box">
           <img src={preview} alt="Recipe" className="image-preview-img" />
-          <div className="image-preview-actions">
-            <button type="button" className="btn btn-small btn-outline"
-              onClick={() => inputRef.current?.click()} disabled={uploading}>
-              {uploading ? 'Uploading...' : 'Change'}
-            </button>
-            <button type="button" className="btn btn-small btn-danger"
-              onClick={handleRemove} disabled={uploading}>
-              Remove
-            </button>
-          </div>
+          {processing && <p className="image-upload-progress">Processing...</p>}
+          {!processing && (
+            <div className="image-preview-actions">
+              <button type="button" className="btn btn-small btn-outline"
+                onClick={() => inputRef.current?.click()}>
+                Change
+              </button>
+              <button type="button" className="btn btn-small btn-danger"
+                onClick={handleRemove}>
+                Remove
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="image-drop-zone" onClick={() => inputRef.current?.click()}>
-          {uploading ? (
-            <p>Uploading...</p>
+          {processing ? (
+            <p>Processing...</p>
           ) : (
             <>
               <span className="image-drop-icon">📷</span>

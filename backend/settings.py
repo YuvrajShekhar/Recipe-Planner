@@ -171,6 +171,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Cloudinary — used in production for persistent image storage.
+# Set CLOUDINARY_URL in Railway environment variables as:
+#   cloudinary://<api_key>:<api_secret>@<cloud_name>
+CLOUDINARY_URL = os.getenv('CLOUDINARY_URL', '')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
