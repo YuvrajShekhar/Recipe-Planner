@@ -85,3 +85,5 @@ from .activity_views import (
     activity_log_detail,
     activity_daily_summary,
 )
+
+from .upload_views import upload_recipe_image

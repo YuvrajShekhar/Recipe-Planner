@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.db.models import Q
 from ..models import Recipe, RecipeIngredient
 from ..serializers import (
     RecipeListSerializer,
@@ -24,8 +25,12 @@ def recipe_list(request):
     GET /api/recipes/?max_time=30
     GET /api/recipes/?ordering=prep_time
     """
-    recipes = Recipe.objects.all()
-    
+    # Visibility filter: public recipes + user's own private recipes
+    if request.user.is_authenticated:
+        recipes = Recipe.objects.filter(Q(is_public=True) | Q(created_by=request.user))
+    else:
+        recipes = Recipe.objects.filter(is_public=True)
+
     # Search by title or description
     search = request.query_params.get('search', None)
     if search:
@@ -59,8 +64,8 @@ def recipe_list(request):
     if ordering in valid_orderings:
         recipes = recipes.order_by(ordering)
     
-    serializer = RecipeListSerializer(recipes, many=True)
-    
+    serializer = RecipeListSerializer(recipes, many=True, context={'request': request})
+
     return Response({
         'count': len(serializer.data),
         'recipes': serializer.data
@@ -78,10 +83,13 @@ def recipe_detail(request, pk):
     try:
         recipe = Recipe.objects.get(pk=pk)
     except Recipe.DoesNotExist:
-        return Response({
-            'message': 'Recipe not found'
-        }, status=status.HTTP_404_NOT_FOUND)
-    
+        return Response({'message': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Private recipes are only visible to their creator
+    if not recipe.is_public:
+        if not request.user.is_authenticated or recipe.created_by != request.user:
+            return Response({'message': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND)
+
     serializer = RecipeDetailSerializer(recipe, context={'request': request})
     
     return Response({
@@ -215,16 +223,20 @@ def recipe_by_user(request, user_id):
     
     GET /api/recipes/user/1/
     """
-    recipes = Recipe.objects.filter(created_by_id=user_id)
-    
+    # Only show public recipes unless the user is viewing their own
+    if request.user.is_authenticated and request.user.id == user_id:
+        recipes = Recipe.objects.filter(created_by_id=user_id)
+    else:
+        recipes = Recipe.objects.filter(created_by_id=user_id, is_public=True)
+
     if not recipes.exists():
         return Response({
             'message': 'No recipes found for this user',
             'count': 0,
             'recipes': []
         }, status=status.HTTP_200_OK)
-    
-    serializer = RecipeListSerializer(recipes, many=True)
+
+    serializer = RecipeListSerializer(recipes, many=True, context={'request': request})
     
     return Response({
         'count': recipes.count(),
@@ -241,7 +253,7 @@ def my_recipes(request):
     GET /api/recipes/my-recipes/
     """
     recipes = Recipe.objects.filter(created_by=request.user)
-    serializer = RecipeListSerializer(recipes, many=True)
+    serializer = RecipeListSerializer(recipes, many=True, context={'request': request})
     
     return Response({
         'count': recipes.count(),

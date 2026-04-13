@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { recipeAPI, ingredientAPI } from '../services/api';
 import { Loading, Alert, PageHeader } from '../components/common';
+import ImageUpload from '../components/recipes/ImageUpload';
 
 const RecipeEdit = () => {
     const { id } = useParams();
@@ -21,13 +22,11 @@ const RecipeEdit = () => {
         prep_time: '',
         cook_time: '',
         servings: '',
-        servings: '',
         difficulty: 'medium',
         preference: 'veg',
         image_url: '',
+        is_public: false,
     });
-
-    const [ingredients, setIngredients] = useState([]);
     const [recipeIngredients, setRecipeIngredients] = useState([]);
     const [allIngredients, setAllIngredients] = useState([]);
 
@@ -59,10 +58,10 @@ const RecipeEdit = () => {
                 prep_time: recipe.prep_time || '',
                 cook_time: recipe.cook_time || '',
                 servings: recipe.servings || '',
-                servings: recipe.servings || '',
                 difficulty: recipe.difficulty || 'medium',
                 preference: recipe.preference || 'veg',
                 image_url: recipe.image_url || '',
+                is_public: recipe.is_public || false,
             });
 
             setRecipeIngredients(
@@ -118,6 +117,7 @@ const RecipeEdit = () => {
                 prep_time: parseInt(formData.prep_time),
                 cook_time: parseInt(formData.cook_time),
                 servings: parseInt(formData.servings),
+                is_public: formData.is_public,
                 ingredients: recipeIngredients
                     .filter(ri => ri.ingredient_id && ri.quantity && ri.unit)
                     .map(ri => ({
@@ -192,15 +192,10 @@ const RecipeEdit = () => {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="image_url">Image URL</label>
-                            <input
-                                type="url"
-                                id="image_url"
-                                name="image_url"
-                                className="form-control"
-                                value={formData.image_url}
-                                onChange={handleChange}
-                                placeholder="https://example.com/image.jpg"
+                            <label>Recipe Image</label>
+                            <ImageUpload
+                                currentUrl={formData.image_url}
+                                onUploaded={(url) => setFormData(f => ({ ...f, image_url: url }))}
                             />
                         </div>
                     </div>
@@ -283,6 +278,23 @@ const RecipeEdit = () => {
                                     <option value="veg">Veg</option>
                                     <option value="nonveg">Non Veg</option>
                                 </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Visibility</label>
+                                <label className="re-toggle-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.is_public}
+                                        onChange={e => setFormData(f => ({ ...f, is_public: e.target.checked }))}
+                                    />
+                                    <span>Share publicly</span>
+                                </label>
+                                <small className="form-hint">
+                                    {formData.is_public
+                                        ? 'All users can see this recipe.'
+                                        : 'Only you can see this recipe.'}
+                                </small>
                             </div>
                         </div>
                     </div>

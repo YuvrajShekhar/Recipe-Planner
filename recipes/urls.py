@@ -4,6 +4,9 @@ from . import views
 urlpatterns = [
     # API Root
     path('', views.api_root, name='api-root'),
+
+    # Image upload
+    path('upload/image/', views.upload_recipe_image, name='upload-image'),
     
     # Authentication endpoints
     path('auth/register/', views.register_user, name='register'),

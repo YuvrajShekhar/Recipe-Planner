@@ -81,44 +81,59 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeListSerializer(serializers.ModelSerializer):
     """Serializer for listing recipes (minimal details)"""
-    
+
     created_by = UserSerializer(read_only=True)
     total_time = serializers.ReadOnlyField()
     ingredient_count = serializers.SerializerMethodField()
-    
+    is_own = serializers.SerializerMethodField()
+
     class Meta:
         model = Recipe
         fields = [
             'id', 'title', 'description', 'prep_time', 'cook_time',
             'total_time', 'servings', 'difficulty', 'image_url',
-            'created_by', 'created_at', 'ingredient_count', 'preference'
+            'created_by', 'created_at', 'ingredient_count', 'preference',
+            'is_public', 'is_own',
         ]
-    
+
     def get_ingredient_count(self, obj):
         return obj.recipe_ingredients.count()
+
+    def get_is_own(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.created_by_id == request.user.id
+        return False
 
 
 class RecipeDetailSerializer(serializers.ModelSerializer):
     """Serializer for full recipe details"""
-    
+
     created_by = UserSerializer(read_only=True)
     recipe_ingredients = RecipeIngredientSerializer(many=True, read_only=True)
     total_time = serializers.ReadOnlyField()
     is_favorited = serializers.SerializerMethodField()
-    
+    is_own = serializers.SerializerMethodField()
+
     class Meta:
         model = Recipe
         fields = [
             'id', 'title', 'description', 'instructions', 'prep_time',
             'cook_time', 'total_time', 'servings', 'difficulty', 'image_url',
             'created_by', 'created_at', 'updated_at', 'recipe_ingredients',
-            'is_favorited', 'preference'
+            'is_favorited', 'preference', 'is_public', 'is_own',
         ]
-    
+
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return Favorite.objects.filter(user=request.user, recipe=obj).exists()
+        return False
+
+    def get_is_own(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.created_by_id == request.user.id
         return False
 
 
@@ -135,8 +150,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = [
             'id', 'title', 'description', 'instructions', 'prep_time',
-            'cook_time', 'servings', 'difficulty', 'image_url', 'ingredients', 'preference'
-            ]
+            'cook_time', 'servings', 'difficulty', 'image_url', 'ingredients',
+            'preference', 'is_public',
+        ]
     
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients', [])

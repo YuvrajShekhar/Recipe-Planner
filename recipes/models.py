@@ -55,7 +55,11 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     preference = models.CharField(max_length=10, choices=PREFERENCE_CHOICES, default='veg')
-    
+    is_public = models.BooleanField(
+        default=False,
+        help_text="If true, all users can see this recipe; otherwise only the creator."
+    )
+
     class Meta:
         ordering = ['-created_at']
     

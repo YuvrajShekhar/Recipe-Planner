@@ -2,9 +2,16 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.db.models import Count
+from django.db.models import Count, Q
 from ..models import Recipe, RecipeIngredient, Ingredient, Pantry
 from ..serializers import IngredientSerializer
+
+
+def _visible_recipes(request):
+    """Return recipes the requesting user is allowed to see."""
+    if request.user.is_authenticated:
+        return Recipe.objects.filter(Q(is_public=True) | Q(created_by=request.user))
+    return Recipe.objects.filter(is_public=True)
 
 
 # ==================== INGREDIENT MATCHING APIs ====================
@@ -64,7 +71,7 @@ def match_recipes_by_ingredients(request):
         limit = 20
     
     # Get all recipes
-    recipes = Recipe.objects.all()
+    recipes = _visible_recipes(request)
     
     # Filter by difficulty if provided
     if difficulty:
@@ -186,7 +193,7 @@ def match_recipes_from_pantry(request):
         limit = 20
     
     # Get all recipes
-    recipes = Recipe.objects.all()
+    recipes = _visible_recipes(request)
     
     # Filter by difficulty if provided
     if difficulty:
@@ -317,7 +324,7 @@ def find_recipes_by_available_ingredients(request):
     max_time = request.query_params.get('max_time', None)
     
     # Get all recipes
-    recipes = Recipe.objects.all()
+    recipes = _visible_recipes(request)
     
     # Filter by difficulty if provided
     if difficulty:
@@ -442,7 +449,7 @@ def find_recipes_missing_few_ingredients(request):
     difficulty = request.query_params.get('difficulty', None)
     
     # Get all recipes
-    recipes = Recipe.objects.all()
+    recipes = _visible_recipes(request)
     
     # Filter by difficulty if provided
     if difficulty:
