@@ -87,8 +87,6 @@ class RecipeListSerializer(serializers.ModelSerializer):
     total_time = serializers.ReadOnlyField()
     ingredient_count = serializers.SerializerMethodField()
     is_own = serializers.SerializerMethodField()
-    has_image = serializers.SerializerMethodField()
-
     class Meta:
         model = Recipe
         fields = [
