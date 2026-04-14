@@ -80,24 +80,29 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
-    """Serializer for listing recipes (minimal details)"""
+    """Serializer for listing recipes — image_url excluded to keep response small.
+    Use RecipeDetailSerializer to get the full image."""
 
     created_by = UserSerializer(read_only=True)
     total_time = serializers.ReadOnlyField()
     ingredient_count = serializers.SerializerMethodField()
     is_own = serializers.SerializerMethodField()
+    has_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = [
             'id', 'title', 'description', 'prep_time', 'cook_time',
-            'total_time', 'servings', 'difficulty', 'image_url',
+            'total_time', 'servings', 'difficulty', 'has_image',
             'created_by', 'created_at', 'ingredient_count', 'preference',
             'is_public', 'is_own',
         ]
 
     def get_ingredient_count(self, obj):
         return obj.recipe_ingredients.count()
+
+    def get_has_image(self, obj):
+        return bool(obj.image_url)
 
     def get_is_own(self, obj):
         request = self.context.get('request')

@@ -85,13 +85,16 @@ const RecipeCard = ({ recipe, onFavoriteToggle, showMatchPercentage = false }) =
         return 'match-low';
     };
 
+    // List view provides has_image (boolean) instead of the full image_url
+    // to keep the list response small. The full image loads on the detail page.
     const defaultImage = getDefaultImage(recipe.title);
+    const cardImage = recipe.image_url || defaultImage;
 
     return (
         <Link to={`/recipes/${recipe.id}`} className="recipe-card card">
             <div className="recipe-card-image">
                 <img
-                    src={recipe.image_url || defaultImage}
+                    src={cardImage}
                     alt={recipe.title}
                     onError={(e) => {
                         e.target.src = defaultImage;
