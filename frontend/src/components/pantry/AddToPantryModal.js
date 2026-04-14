@@ -68,7 +68,7 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
         } else {
             setSelectedIngredients([
                 ...selectedIngredients,
-                { ingredient_id: ingredient.id, name: ingredient.name, quantity: null }
+                { ingredient_id: ingredient.id, name: ingredient.name, unit: ingredient.unit, quantity: null }
             ]);
         }
     };
@@ -161,15 +161,20 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
                                 {selectedIngredients.map(item => (
                                     <div key={item.ingredient_id} className="selected-item">
                                         <span className="item-name">{item.name}</span>
-                                        <input
-                                            type="number"
-                                            placeholder="Qty (optional)"
-                                            value={item.quantity || ''}
-                                            onChange={(e) => updateQuantity(item.ingredient_id, e.target.value)}
-                                            className="qty-input"
-                                            step="0.01"
-                                            min="0"
-                                        />
+                                        <div className="qty-with-unit">
+                                            <input
+                                                type="number"
+                                                placeholder="Qty"
+                                                value={item.quantity || ''}
+                                                onChange={(e) => updateQuantity(item.ingredient_id, e.target.value)}
+                                                className="qty-input"
+                                                step="0.01"
+                                                min="0"
+                                            />
+                                            {item.unit && (
+                                                <span className="qty-unit-label">{item.unit}</span>
+                                            )}
+                                        </div>
                                         <button
                                             className="remove-btn"
                                             onClick={() => toggleIngredient({ id: item.ingredient_id })}

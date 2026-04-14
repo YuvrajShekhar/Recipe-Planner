@@ -5,13 +5,14 @@ import DailySummary from '../components/health/DailySummary';
 import FoodEntryForm from '../components/health/FoodEntryForm';
 import AddFoodChoiceModal from '../components/health/AddFoodChoiceModal';
 import RecipeFoodEntry from '../components/health/RecipeFoodEntry';
+import FridgeFoodEntry from '../components/health/FridgeFoodEntry';
 import '../styles/Health.css';
 
 const Health = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dailySummary, setDailySummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState({});
-  // addMode: null | 'manual' | 'recipe'
+  // addMode: null | 'manual' | 'recipe' | 'fridge'
   const [addMode, setAddMode] = useState(null);
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -79,7 +80,7 @@ const Health = () => {
     setShowChoiceModal(false);
   };
 
-  // Handle adding new food entry (used by both manual form and recipe picker)
+  // Handle adding new food entry (used by manual form and recipe picker)
   const handleAddEntry = async (entryData) => {
     try {
       setLoading(true);
@@ -99,6 +100,14 @@ const Health = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Called by FridgeFoodEntry after successful consume (it handles the API call itself)
+  const handleFridgeEntry = async () => {
+    await fetchDailySummary(selectedDate);
+    await fetchMonthlyData(selectedDate);
+    setAddMode(null);
+    alert('Fridge entry logged successfully!');
   };
 
   // Handle deleting an entry
@@ -183,10 +192,19 @@ const Health = () => {
               />
             )}
 
+            {addMode === 'fridge' && (
+              <FridgeFoodEntry
+                onSubmit={handleFridgeEntry}
+                onCancel={handleCancelAdd}
+                selectedDate={selectedDate}
+              />
+            )}
+
             {showChoiceModal && (
               <AddFoodChoiceModal
                 onChooseManual={() => { setShowChoiceModal(false); setAddMode('manual'); }}
                 onChooseRecipe={() => { setShowChoiceModal(false); setAddMode('recipe'); }}
+                onChooseFridge={() => { setShowChoiceModal(false); setAddMode('fridge'); }}
                 onCancel={() => setShowChoiceModal(false)}
               />
             )}

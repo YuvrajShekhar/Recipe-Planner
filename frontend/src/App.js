@@ -23,6 +23,7 @@ import Favorites from './pages/Favorites';
 import Profile from './pages/Profile';
 import Health from './pages/Health';
 import Fitness from './pages/Fitness';
+import Fridge from './pages/Fridge';
 import NotFound from './pages/NotFound';
 
 // Styles
@@ -92,6 +93,14 @@ function App() {
                                     element={
                                         <ProtectedRoute>
                                             <Fitness />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/fridge"
+                                    element={
+                                        <ProtectedRoute>
+                                            <Fridge />
                                         </ProtectedRoute>
                                     }
                                 />

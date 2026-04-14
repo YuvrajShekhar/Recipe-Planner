@@ -4058,12 +4058,25 @@ textarea.form-control {
     color: #2c3e50;
 }
 
+.qty-with-unit {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
 .selected-item .qty-input {
-    width: 100px;
+    width: 80px;
     padding: 6px 10px;
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 0.9rem;
+}
+
+.qty-unit-label {
+    font-size: 0.82rem;
+    color: #6b7280;
+    white-space: nowrap;
+    font-weight: 500;
 }
 
 .selected-item .remove-btn {

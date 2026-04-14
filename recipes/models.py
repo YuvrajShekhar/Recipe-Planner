@@ -270,6 +270,25 @@ class FitnessLog(models.Model):
         return f"{self.user.username} - {self.steps} steps on {self.date}"
 
 
+class FridgeItem(models.Model):
+    """Stores cooked dishes in the user's virtual fridge"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fridge_items')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='fridge_items')
+    portions = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        help_text="Number of portions/servings currently stored"
+    )
+    cooked_at = models.DateTimeField(auto_now_add=True)
+    notes = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        ordering = ['-cooked_at']
+
+    def __str__(self):
+        return f"{self.user.username}'s {self.recipe.title} ({self.portions} portions)"
+
+
 class FitbitCredentials(models.Model):
     """Stores Fitbit OAuth 2.0 tokens per user"""
 

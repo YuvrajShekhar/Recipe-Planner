@@ -87,3 +87,10 @@ from .activity_views import (
 )
 
 from .upload_views import upload_recipe_image
+
+from .fridge_views import (
+    fridge_list,
+    fridge_item_detail,
+    cook_recipe,
+    consume_from_fridge,
+)

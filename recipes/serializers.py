@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .models import (
     Ingredient, Recipe, RecipeIngredient, Pantry, Favorite,
     IngredientNutrition, DailyNutritionLog, FitnessLog,
-    UserProfile, ActivityLog,
+    UserProfile, ActivityLog, FridgeItem,
 )
 
 
@@ -335,3 +335,14 @@ class ActivityLogSerializer(serializers.ModelSerializer):
             'duration_minutes', 'calories_burned', 'notes', 'created_at',
         ]
         read_only_fields = ['id', 'activity_label', 'created_at']
+
+
+class FridgeItemSerializer(serializers.ModelSerializer):
+    """Serializer for FridgeItem — cooked dishes stored in the user's virtual fridge"""
+
+    recipe = RecipeListSerializer(read_only=True)
+
+    class Meta:
+        model = FridgeItem
+        fields = ['id', 'recipe', 'portions', 'cooked_at', 'notes']
+        read_only_fields = ['id', 'cooked_at']

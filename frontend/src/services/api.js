@@ -156,6 +156,24 @@ export const fitnessAPI = {
     syncSteps: (date) => API.get('/fitness/sync/', { params: { date } }),
 };
 
+// ==================== FRIDGE APIs ====================
+
+export const fridgeAPI = {
+    // List all fridge items
+    getAll: () => API.get('/fridge/'),
+
+    // Cook a recipe: deduct pantry ingredients and add to fridge
+    // data: { recipe_id, portions, force }
+    cook: (data) => API.post('/fridge/cook/', data),
+
+    // Delete (throw away) a fridge item
+    delete: (id) => API.delete(`/fridge/${id}/`),
+
+    // Consume portions from a fridge item and log to health diary
+    // data: { fridge_item_id, portions_consumed, date, notes }
+    consume: (data) => API.post('/fridge/consume/', data),
+};
+
 // ==================== ACTIVITY (GYM / EXERCISE) APIs ====================
 
 export const activityAPI = {
