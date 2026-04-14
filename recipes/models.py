@@ -50,6 +50,8 @@ class Recipe(models.Model):
     servings = models.PositiveIntegerField(default=4)
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='medium')
     image_url = models.TextField(blank=True, null=True)
+    thumbnail_url = models.TextField(blank=True, null=True,
+        help_text="Small compressed version used in recipe card lists.")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipes')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

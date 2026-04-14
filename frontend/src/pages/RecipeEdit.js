@@ -25,6 +25,7 @@ const RecipeEdit = () => {
         difficulty: 'medium',
         preference: 'veg',
         image_url: '',
+        thumbnail_url: '',
         is_public: false,
     });
     const [recipeIngredients, setRecipeIngredients] = useState([]);
@@ -61,6 +62,7 @@ const RecipeEdit = () => {
                 difficulty: recipe.difficulty || 'medium',
                 preference: recipe.preference || 'veg',
                 image_url: recipe.image_url || '',
+                thumbnail_url: recipe.thumbnail_url || '',
                 is_public: recipe.is_public || false,
             });
 
@@ -195,7 +197,9 @@ const RecipeEdit = () => {
                             <label>Recipe Image</label>
                             <ImageUpload
                                 currentUrl={formData.image_url}
-                                onUploaded={(url) => setFormData(f => ({ ...f, image_url: url }))}
+                                onUploaded={({ image_url, thumbnail_url }) =>
+                                    setFormData(f => ({ ...f, image_url, thumbnail_url }))
+                                }
                             />
                         </div>
                     </div>

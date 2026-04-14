@@ -1,38 +1,59 @@
 import { useState, useRef, useEffect } from 'react';
 
-const MAX_FILE_MB = 5;
-const MAX_WIDTH   = 900;   // resize to max 900px wide
-const MAX_HEIGHT  = 700;
-const QUALITY     = 0.82;  // JPEG compression quality (0-1)
+const MAX_FILE_MB   = 5;
+const FULL_MAX_W    = 900;
+const FULL_MAX_H    = 700;
+const FULL_QUALITY  = 0.82;
+const THUMB_MAX_W   = 400;
+const THUMB_MAX_H   = 300;
+const THUMB_QUALITY = 0.70;
 
 /**
- * Resize + compress an image File using a canvas.
- * Always outputs JPEG regardless of input format.
- * Returns a base64 data URL string.
+ * Draw an image onto a canvas at the given dimensions and return a base64 JPEG.
  */
-function compressImage(file) {
+function canvasToBase64(img, width, height, quality) {
+  const canvas = document.createElement('canvas');
+  canvas.width  = width;
+  canvas.height = height;
+  canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL('image/jpeg', quality);
+}
+
+/**
+ * Resize an image File to two sizes: full and thumbnail.
+ * Returns { image_url, thumbnail_url } as base64 JPEG data URLs.
+ */
+function processImage(file) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
+    const img    = new Image();
     const blobUrl = URL.createObjectURL(file);
 
     img.onload = () => {
       URL.revokeObjectURL(blobUrl);
 
-      let { width, height } = img;
+      const { width: origW, height: origH } = img;
 
-      // Scale down if larger than max dimensions
-      if (width > MAX_WIDTH || height > MAX_HEIGHT) {
-        const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
-        width  = Math.round(width  * ratio);
-        height = Math.round(height * ratio);
-      }
+      // Full version
+      const fullRatio = Math.min(
+        FULL_MAX_W / origW,
+        FULL_MAX_H / origH,
+        1           // never upscale
+      );
+      const fullW = Math.round(origW * fullRatio);
+      const fullH = Math.round(origH * fullRatio);
+      const image_url = canvasToBase64(img, fullW, fullH, FULL_QUALITY);
 
-      const canvas = document.createElement('canvas');
-      canvas.width  = width;
-      canvas.height = height;
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      // Thumbnail version
+      const thumbRatio = Math.min(
+        THUMB_MAX_W / origW,
+        THUMB_MAX_H / origH,
+        1
+      );
+      const thumbW = Math.round(origW * thumbRatio);
+      const thumbH = Math.round(origH * thumbRatio);
+      const thumbnail_url = canvasToBase64(img, thumbW, thumbH, THUMB_QUALITY);
 
-      resolve(canvas.toDataURL('image/jpeg', QUALITY));
+      resolve({ image_url, thumbnail_url });
     };
 
     img.onerror = () => {
@@ -45,12 +66,11 @@ function compressImage(file) {
 }
 
 /**
- * ImageUpload — compresses the picked image to a small JPEG base64 string
- * and passes it to onUploaded(). No server upload needed.
+ * ImageUpload — compresses the picked image into a full + thumbnail base64 pair.
  *
  * Props:
- *   currentUrl  — existing image_url value (string | null)
- *   onUploaded  — called with the compressed base64 data URL string
+ *   currentUrl   — existing image_url value for preview (string | null)
+ *   onUploaded   — called with { image_url, thumbnail_url } after processing
  */
 const ImageUpload = ({ currentUrl, onUploaded }) => {
   const [preview,    setPreview]    = useState(currentUrl || '');
@@ -58,7 +78,7 @@ const ImageUpload = ({ currentUrl, onUploaded }) => {
   const [error,      setError]      = useState('');
   const inputRef = useRef();
 
-  // Sync when parent loads recipe data asynchronously
+  // Sync preview when parent loads recipe data asynchronously
   useEffect(() => {
     if (currentUrl && currentUrl !== preview) {
       setPreview(currentUrl);
@@ -81,14 +101,12 @@ const ImageUpload = ({ currentUrl, onUploaded }) => {
 
     setError('');
     setProcessing(true);
-
-    // Reset input early so same file can be re-selected
     if (inputRef.current) inputRef.current.value = '';
 
     try {
-      const dataUrl = await compressImage(file);
-      setPreview(dataUrl);
-      onUploaded(dataUrl);
+      const { image_url, thumbnail_url } = await processImage(file);
+      setPreview(image_url);
+      onUploaded({ image_url, thumbnail_url });
     } catch {
       setError('Failed to process image. Please try again.');
     } finally {
@@ -98,7 +116,7 @@ const ImageUpload = ({ currentUrl, onUploaded }) => {
 
   const handleRemove = () => {
     setPreview('');
-    onUploaded('');
+    onUploaded({ image_url: '', thumbnail_url: '' });
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -122,7 +140,8 @@ const ImageUpload = ({ currentUrl, onUploaded }) => {
           )}
         </div>
       ) : (
-        <div className="image-drop-zone" onClick={() => !processing && inputRef.current?.click()}>
+        <div className="image-drop-zone"
+          onClick={() => !processing && inputRef.current?.click()}>
           {processing ? (
             <p>Compressing...</p>
           ) : (

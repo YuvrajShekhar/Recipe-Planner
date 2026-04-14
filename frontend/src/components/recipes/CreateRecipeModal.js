@@ -22,6 +22,7 @@ const CreateRecipeModal = ({ onCreated, onClose }) => {
     difficulty: 'medium',
     preference: 'veg',
     image_url: '',
+    thumbnail_url: '',
     is_public: false,
   });
   const [ingredientRows, setIngredientRows] = useState([{ ...EMPTY_INGREDIENT_ROW }]);
@@ -176,7 +177,9 @@ const CreateRecipeModal = ({ onCreated, onClose }) => {
                 <label>Recipe Image</label>
                 <ImageUpload
                   currentUrl={form.image_url}
-                  onUploaded={(url) => setForm(f => ({ ...f, image_url: url }))}
+                  onUploaded={({ image_url, thumbnail_url }) =>
+                    setForm(f => ({ ...f, image_url, thumbnail_url }))
+                  }
                 />
               </div>
             </div>

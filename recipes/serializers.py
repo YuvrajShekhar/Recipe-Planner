@@ -93,16 +93,13 @@ class RecipeListSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = [
             'id', 'title', 'description', 'prep_time', 'cook_time',
-            'total_time', 'servings', 'difficulty', 'has_image',
+            'total_time', 'servings', 'difficulty', 'thumbnail_url',
             'created_by', 'created_at', 'ingredient_count', 'preference',
             'is_public', 'is_own',
         ]
 
     def get_ingredient_count(self, obj):
         return obj.recipe_ingredients.count()
-
-    def get_has_image(self, obj):
-        return bool(obj.image_url)
 
     def get_is_own(self, obj):
         request = self.context.get('request')
@@ -126,7 +123,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'instructions', 'prep_time',
             'cook_time', 'total_time', 'servings', 'difficulty', 'image_url',
             'created_by', 'created_at', 'updated_at', 'recipe_ingredients',
-            'is_favorited', 'preference', 'is_public', 'is_own',
+            'is_favorited', 'preference', 'is_public', 'is_own', 'thumbnail_url',
         ]
 
     def get_is_favorited(self, obj):
@@ -155,8 +152,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = [
             'id', 'title', 'description', 'instructions', 'prep_time',
-            'cook_time', 'servings', 'difficulty', 'image_url', 'ingredients',
-            'preference', 'is_public',
+            'cook_time', 'servings', 'difficulty', 'image_url', 'thumbnail_url',
+            'ingredients', 'preference', 'is_public',
         ]
     
     def create(self, validated_data):
