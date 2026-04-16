@@ -240,7 +240,7 @@
   margin-top: 1rem;
 }
 
-/* ── Choice modal: fridge button ─────────────────────────────────────────── */
+/* ── Choice modal: fridge + scan buttons ─────────────────────────────────── */
 
 .fridge-choice {
   background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
@@ -250,6 +250,228 @@
 .fridge-choice:hover {
   background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%);
   border-color: #0ea5e9;
+}
+
+.scan-choice {
+  background: linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%);
+  border: 2px solid #4ade80;
+}
+
+.scan-choice:hover {
+  background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%);
+  border-color: #22c55e;
+}
+
+/* ── Barcode Scanner ─────────────────────────────────────────────────────── */
+
+.barcode-scanner-wrap {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.barcode-scanner-wrap h3 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: var(--text-primary, #1a1a2e);
+}
+
+/* Idle state */
+.scanner-idle {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.scanner-idle p {
+  margin: 0 0 0.4rem;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.scanner-hint {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #6b7280) !important;
+  margin-bottom: 1.25rem !important;
+}
+
+.scanner-idle-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* Active camera */
+.scanner-active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scanner-video-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+
+.scanner-video {
+  width: 100%;
+  display: block;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+
+.scanner-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.scanner-crosshair {
+  width: 200px;
+  height: 130px;
+  border: 3px solid #22c55e;
+  border-radius: 8px;
+  box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.35);
+}
+
+.scanner-tip {
+  color: #fff;
+  font-size: 0.82rem;
+  background: rgba(0,0,0,0.5);
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  margin: 0;
+}
+
+.scanner-cancel-btn {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Loading */
+.scanner-loading {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.scanner-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 0.75rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error */
+.scanner-error-state {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.scanner-error-msg {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* Review */
+.scanner-review {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.product-info-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.product-name {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0 0 0.2rem;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.product-brand {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #6b7280);
+  margin: 0 0 0.2rem;
+}
+
+.product-serving {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #6b7280);
+  margin: 0;
+}
+
+.scanner-serving-hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #6b7280);
+  font-weight: 400;
+}
+
+/* Nutrition preview grid */
+.scanner-nutrition-preview {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.scanner-nutrition-preview h4 {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: #166534;
+}
+
+.nutrition-preview-grid {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.nutrient-cell {
+  flex: 1;
+  min-width: 60px;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  text-align: center;
+  border: 1px solid #d1fae5;
+}
+
+.nutrient-val {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.nutrient-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-secondary, #6b7280);
+  margin-top: 0.1rem;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */

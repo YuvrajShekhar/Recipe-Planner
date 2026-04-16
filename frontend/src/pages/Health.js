@@ -6,13 +6,14 @@ import FoodEntryForm from '../components/health/FoodEntryForm';
 import AddFoodChoiceModal from '../components/health/AddFoodChoiceModal';
 import RecipeFoodEntry from '../components/health/RecipeFoodEntry';
 import FridgeFoodEntry from '../components/health/FridgeFoodEntry';
+import BarcodeScanner from '../components/health/BarcodeScanner';
 import '../styles/Health.css';
 
 const Health = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dailySummary, setDailySummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState({});
-  // addMode: null | 'manual' | 'recipe' | 'fridge'
+  // addMode: null | 'manual' | 'recipe' | 'fridge' | 'scan'
   const [addMode, setAddMode] = useState(null);
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -200,11 +201,25 @@ const Health = () => {
               />
             )}
 
+            {addMode === 'scan' && (
+              <BarcodeScanner
+                onSubmit={async () => {
+                  await fetchDailySummary(selectedDate);
+                  await fetchMonthlyData(selectedDate);
+                  setAddMode(null);
+                  alert('Item logged successfully!');
+                }}
+                onCancel={handleCancelAdd}
+                selectedDate={selectedDate}
+              />
+            )}
+
             {showChoiceModal && (
               <AddFoodChoiceModal
                 onChooseManual={() => { setShowChoiceModal(false); setAddMode('manual'); }}
                 onChooseRecipe={() => { setShowChoiceModal(false); setAddMode('recipe'); }}
                 onChooseFridge={() => { setShowChoiceModal(false); setAddMode('fridge'); }}
+                onChooseScan={() => { setShowChoiceModal(false); setAddMode('scan'); }}
                 onCancel={() => setShowChoiceModal(false)}
               />
             )}
