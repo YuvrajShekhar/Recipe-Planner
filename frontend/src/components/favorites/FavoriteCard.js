@@ -58,8 +58,8 @@ const FavoriteCard = ({ favorite, onRemove, pantryMatch }) => {
         <div className={`favorite-card ${removing ? 'removing' : ''}`}>
             <Link to={`/recipes/${recipe.id}`} className="favorite-card-link">
                 <div className="favorite-card-image">
-                    <img 
-                        src={recipe.image_url || getDefaultImage(recipe.title)} 
+                    <img
+                        src={recipe.thumbnail_url || recipe.image_url || getDefaultImage(recipe.title)}
                         alt={recipe.title}
                         onError={(e) => {
                             e.target.src = getDefaultImage(recipe.title);
