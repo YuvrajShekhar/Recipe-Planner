@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { fridgeAPI } from '../../services/api';
 import '../../styles/Health.css';
 
@@ -89,9 +89,9 @@ const FridgeFoodEntry = ({ onSubmit, onCancel, selectedDate }) => {
               <input
                 className="form-control"
                 type="number"
-                min="0.5"
+                min="0.1"
                 max={parseFloat(selectedItem.portions)}
-                step="0.5"
+                step="0.1"
                 value={portions}
                 onChange={e => setPortions(e.target.value)}
               />
