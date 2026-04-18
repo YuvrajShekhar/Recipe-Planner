@@ -60,11 +60,11 @@ def food_item_create(request):
         'barcode':             barcode,
         'category':            request.data.get('category', 'other'),
         'serving_description': request.data.get('serving_description', '1 serving'),
-        'calories':            request.data.get('calories', 0),
-        'protein':             request.data.get('protein', 0),
-        'carbs':               request.data.get('carbs', 0),
-        'fat':                 request.data.get('fat', 0),
-        'fiber':               request.data.get('fiber', 0),
+        'calories':            round(float(request.data.get('calories', 0) or 0), 2),
+        'protein':             round(float(request.data.get('protein',  0) or 0), 2),
+        'carbs':               round(float(request.data.get('carbs',    0) or 0), 2),
+        'fat':                 round(float(request.data.get('fat',      0) or 0), 2),
+        'fiber':               round(float(request.data.get('fiber',    0) or 0), 2),
         'thumbnail_url':       request.data.get('thumbnail_url', ''),
     }
 

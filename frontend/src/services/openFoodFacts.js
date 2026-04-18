@@ -12,9 +12,11 @@ export async function fetchProductByBarcode(barcode) {
   const servingQty = parseFloat(p.serving_quantity) || null;
 
   const perServing = (key100g, keyServing) => {
-    if (n[keyServing] != null) return parseFloat(n[keyServing]);
-    if (n[key100g]   != null && servingQty) return (parseFloat(n[key100g]) * servingQty) / 100;
-    return 0;
+    let val;
+    if (n[keyServing] != null) val = parseFloat(n[keyServing]);
+    else if (n[key100g] != null && servingQty) val = (parseFloat(n[key100g]) * servingQty) / 100;
+    else val = 0;
+    return Math.round(val * 100) / 100;   // round to 2 dp — prevents DecimalField rejection
   };
 
   return {

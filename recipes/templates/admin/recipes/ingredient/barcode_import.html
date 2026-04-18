@@ -1,0 +1,199 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Import Ingredient by Barcode{% endblock %}
+
+{% block content %}
+<style>
+  .barcode-import-page { max-width: 760px; }
+
+  .barcode-lookup-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .barcode-lookup-box h2 { margin-top: 0; font-size: 1.1rem; color: #1e293b; }
+  .barcode-row { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
+  .barcode-input-wrap { flex: 1; min-width: 200px; }
+  .barcode-input-wrap label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; }
+  .barcode-input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+  .barcode-tip { font-size: 0.8rem; color: #64748b; margin-top: 0.4rem; }
+
+  .product-preview {
+    display: flex; gap: 1rem; align-items: flex-start;
+    background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;
+    padding: 1rem; margin-bottom: 1.25rem;
+  }
+  .product-preview img { width: 72px; height: 72px; object-fit: contain; border-radius: 6px; border: 1px solid #d1fae5; }
+  .product-preview .product-meta h3 { margin: 0 0 0.2rem; font-size: 1rem; }
+  .product-preview .product-meta p { margin: 0; color: #64748b; font-size: 0.85rem; }
+
+  .lookup-error {
+    background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px;
+    padding: 0.75rem 1rem; color: #dc2626; margin-bottom: 1rem; font-size: 0.9rem;
+  }
+
+  .form-section { margin-bottom: 1.5rem; }
+  .form-section h3 { font-size: 1rem; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.4rem; margin-bottom: 1rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .form-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; }
+  .form-field label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.3rem; }
+  .form-field input, .form-field select {
+    width: 100%; padding: 0.45rem 0.65rem;
+    border: 1px solid #cbd5e1; border-radius: 6px;
+    font-size: 0.9rem; box-sizing: border-box;
+  }
+  .form-field .help { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .unit-type-row { display: flex; gap: 1.5rem; margin-bottom: 1rem; align-items: center; }
+  .unit-type-row label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; cursor: pointer; }
+
+  .nutrition-panel { padding: 1rem; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .nutrition-panel.per-100g-panel { border-color: #93c5fd; background: #f0f9ff; }
+  .nutrition-panel.per-unit-panel { border-color: #c4b5fd; background: #faf5ff; }
+
+  .submit-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+</style>
+
+<div class="barcode-import-page">
+  <h1>Import Ingredient by Barcode</h1>
+
+  <!-- Step 1: Barcode lookup -->
+  <div class="barcode-lookup-box">
+    <h2>Step 1 — Enter or scan a barcode</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="lookup">
+      <div class="barcode-row">
+        <div class="barcode-input-wrap">
+          <label for="barcode">Barcode (EAN-13 / UPC)</label>
+          <input id="barcode" name="barcode" type="text" class="barcode-input"
+            value="{{ barcode|default:'' }}"
+            placeholder="e.g. 5000112637922"
+            autofocus autocomplete="off" />
+          <p class="barcode-tip">
+            Plug in a USB barcode scanner and scan the product — it types the barcode automatically.
+            Or type it manually and press Lookup.
+          </p>
+        </div>
+        <div>
+          <input type="submit" value="Lookup →" class="button default" style="margin-bottom:1.55rem">
+        </div>
+      </div>
+    </form>
+  </div>
+
+  {% if lookup_error %}
+    <div class="lookup-error">{{ lookup_error }}</div>
+  {% endif %}
+
+  <!-- Step 2: Review & save -->
+  {% if product %}
+  <div class="product-preview">
+    {% if product.thumbnail_url %}
+      <img src="{{ product.thumbnail_url }}" alt="{{ product.name }}">
+    {% endif %}
+    <div class="product-meta">
+      <h3>{{ product.name }}{% if product.brand %} — <em>{{ product.brand }}</em>{% endif %}</h3>
+      <p>Barcode: {{ product.barcode }}</p>
+      <p>Review the fields below and click <strong>Save Ingredient</strong>.</p>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="save">
+    <input type="hidden" name="barcode" value="{{ product.barcode }}">
+    <input type="hidden" name="thumbnail_url" value="{{ product.thumbnail_url }}">
+
+    <!-- Ingredient fields -->
+    <div class="form-section">
+      <h3>Ingredient</h3>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Name *</label>
+          <input name="name" type="text" value="{{ product.name }}" required>
+        </div>
+        <div class="form-field">
+          <label>Brand</label>
+          <input name="brand" type="text" value="{{ product.brand }}">
+        </div>
+        <div class="form-field">
+          <label>Category</label>
+          <select name="category">
+            {% for val, display in categories %}
+              <option value="{{ val }}"{% if val == product.category %} selected{% endif %}>{{ display }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Default unit</label>
+          <input name="unit" type="text" value="{{ product.unit|default:'grams' }}"
+            placeholder="grams / ml / pieces">
+          <p class="help">Used in pantry and recipe quantities</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nutrition fields -->
+    <div class="form-section">
+      <h3>Nutrition</h3>
+
+      <div class="unit-type-row">
+        <strong>Measure type:</strong>
+        <label>
+          <input type="radio" name="unit_type" value="per_100g"
+            {% if product.unit_type != 'per_unit' %}checked{% endif %}
+            onchange="document.getElementById('per100g').style.display='block';document.getElementById('perunit').style.display='none'">
+          Per 100g
+        </label>
+        <label>
+          <input type="radio" name="unit_type" value="per_unit"
+            {% if product.unit_type == 'per_unit' %}checked{% endif %}
+            onchange="document.getElementById('per100g').style.display='none';document.getElementById('perunit').style.display='block'">
+          Per unit / piece
+        </label>
+      </div>
+
+      <div id="per100g" class="nutrition-panel per-100g-panel"
+        {% if product.unit_type == 'per_unit' %}style="display:none"{% endif %}>
+        <p style="margin-top:0;font-size:0.85rem;color:#1d4ed8">Values per 100 grams</p>
+        <div class="form-grid-5">
+          {% for key, label, val in nutrition_100g %}
+          <div class="form-field">
+            <label>{{ label }}</label>
+            <input name="{{ key }}" type="number" step="0.01" min="0" value="{{ val|default:'' }}" placeholder="0">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div id="perunit" class="nutrition-panel per-unit-panel"
+        {% if product.unit_type != 'per_unit' %}style="display:none"{% endif %}>
+        <p style="margin-top:0;font-size:0.85rem;color:#6d28d9">Values per single unit / piece</p>
+        <div class="form-grid-5">
+          {% for key, label, val in nutrition_unit %}
+          <div class="form-field">
+            <label>{{ label }}</label>
+            <input name="{{ key }}" type="number" step="0.01" min="0" value="{{ val|default:'' }}" placeholder="0">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+    {% if save_error %}
+      <div class="lookup-error">{{ save_error }}</div>
+    {% endif %}
+
+    <div class="submit-row">
+      <input type="submit" value="Save Ingredient" class="button default">
+      <a href="{% url 'admin:recipes_ingredient_changelist' %}" class="button">Cancel</a>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
