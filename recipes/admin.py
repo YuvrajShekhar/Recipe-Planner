@@ -87,7 +87,7 @@ def _nutrition_unit_fields(product):
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display  = ('name', 'category', 'unit', 'barcode_import_link')
+    list_display  = ('name', 'category', 'unit')
     list_filter   = ('category',)
     search_fields = ['name']
     ordering      = ('name',)
@@ -102,13 +102,6 @@ class IngredientAdmin(admin.ModelAdmin):
             ),
         ]
         return custom + urls
-
-    # Column with a quick link on each row (not strictly needed, but handy)
-    @admin.display(description='')
-    def barcode_import_link(self, obj):
-        from django.utils.html import format_html
-        url = reverse('admin:recipes_ingredient_barcode_import')
-        return format_html('<a href="{}">Import by barcode</a>', url)
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -189,15 +182,18 @@ class IngredientAdmin(admin.ModelAdmin):
                 })
                 return render(request, 'admin/recipes/ingredient/barcode_import.html', context)
 
-            # Create or update the Ingredient
-            ingredient, created = Ingredient.objects.get_or_create(
-                name__iexact=name,
-                defaults={'name': name, 'category': category, 'unit': unit},
-            )
-            if not created:
+            # Create or update the Ingredient (case-insensitive name match)
+            try:
+                ingredient = Ingredient.objects.get(name__iexact=name)
                 ingredient.category = category
                 ingredient.unit     = unit
                 ingredient.save(update_fields=['category', 'unit'])
+                created = False
+            except Ingredient.DoesNotExist:
+                ingredient = Ingredient.objects.create(
+                    name=name, category=category, unit=unit,
+                )
+                created = True
 
             # Create or update IngredientNutrition
             nutrition_defaults = {
