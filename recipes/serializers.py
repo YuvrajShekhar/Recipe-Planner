@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .models import (
     Ingredient, Recipe, RecipeIngredient, Pantry, Favorite,
     IngredientNutrition, DailyNutritionLog, FitnessLog,
-    UserProfile, ActivityLog, FridgeItem,
+    UserProfile, ActivityLog, FridgeItem, FoodItem, FoodPantry,
 )
 
 
@@ -346,3 +346,27 @@ class FridgeItemSerializer(serializers.ModelSerializer):
         model = FridgeItem
         fields = ['id', 'recipe', 'portions', 'cooked_at', 'notes']
         read_only_fields = ['id', 'cooked_at']
+
+
+class FoodItemSerializer(serializers.ModelSerializer):
+    """Serializer for FoodItem — standalone food items with per-serving nutrition."""
+
+    class Meta:
+        model = FoodItem
+        fields = [
+            'id', 'name', 'brand', 'barcode', 'category',
+            'serving_description', 'calories', 'protein', 'carbs', 'fat', 'fiber',
+            'thumbnail_url', 'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class FoodPantrySerializer(serializers.ModelSerializer):
+    """Serializer for FoodPantry — user's stock of food items."""
+
+    food_item = FoodItemSerializer(read_only=True)
+
+    class Meta:
+        model = FoodPantry
+        fields = ['id', 'food_item', 'quantity', 'added_at', 'updated_at']
+        read_only_fields = ['id', 'added_at', 'updated_at']

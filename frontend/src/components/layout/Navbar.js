@@ -96,6 +96,15 @@ const Navbar = () => {
                             </li>
                             <li>
                                 <Link
+                                    to="/foods"
+                                    className={isActive('/foods')}
+                                    onClick={closeMobileMenu}
+                                >
+                                    Foods
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
                                     to="/fridge"
                                     className={isActive('/fridge')}
                                     onClick={closeMobileMenu}

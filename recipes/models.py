@@ -270,6 +270,70 @@ class FitnessLog(models.Model):
         return f"{self.user.username} - {self.steps} steps on {self.date}"
 
 
+class FoodItem(models.Model):
+    """Standalone food items (apples, protein bars, etc.) with per-serving nutrition."""
+
+    CATEGORY_CHOICES = [
+        ('fruit',     'Fruit'),
+        ('vegetable', 'Vegetable'),
+        ('dairy',     'Dairy'),
+        ('meat',      'Meat'),
+        ('grain',     'Grain'),
+        ('snack',     'Snack'),
+        ('beverage',  'Beverage'),
+        ('packaged',  'Packaged Food'),
+        ('other',     'Other'),
+    ]
+
+    name               = models.CharField(max_length=200)
+    brand              = models.CharField(max_length=200, blank=True)
+    barcode            = models.CharField(max_length=100, blank=True, db_index=True)
+    category           = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
+    serving_description = models.CharField(
+        max_length=100, default='1 serving',
+        help_text='e.g. "1 piece", "100g", "1 bar"'
+    )
+    # Per-serving nutrition
+    calories = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    protein  = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    carbs    = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    fat      = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    fiber    = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+
+    thumbnail_url = models.TextField(blank=True)
+    created_by    = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='food_items',
+        null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.name} ({self.brand})" if self.brand else self.name
+
+
+class FoodPantry(models.Model):
+    """How many of each food item a user currently has."""
+
+    user      = models.ForeignKey(User, on_delete=models.CASCADE, related_name='food_pantry')
+    food_item = models.ForeignKey(FoodItem, on_delete=models.CASCADE, related_name='pantry_entries')
+    quantity  = models.DecimalField(
+        max_digits=8, decimal_places=2,
+        help_text='Number of units/servings currently owned'
+    )
+    added_at   = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'food_item']
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.user.username}'s {self.food_item.name} ×{self.quantity}"
+
+
 class FridgeItem(models.Model):
     """Stores cooked dishes in the user's virtual fridge"""
 

@@ -77,6 +77,15 @@ urlpatterns = [
     path('fitness/activities/<int:pk>/', views.activity_log_detail, name='activity-log-detail'),
     path('fitness/activities/daily/', views.activity_daily_summary, name='activity-daily-summary'),
 
+    # Food Items + Food Pantry endpoints
+    path('foods/', views.food_item_list, name='food-item-list'),
+    path('foods/create/', views.food_item_create, name='food-item-create'),
+    path('foods/<int:pk>/', views.food_item_detail, name='food-item-detail'),
+    path('food-pantry/', views.food_pantry_list, name='food-pantry-list'),
+    path('food-pantry/add/', views.food_pantry_add, name='food-pantry-add'),
+    path('food-pantry/consume/', views.food_pantry_consume, name='food-pantry-consume'),
+    path('food-pantry/<int:pk>/', views.food_pantry_detail, name='food-pantry-detail'),
+
     # Fridge endpoints
     path('fridge/', views.fridge_list, name='fridge-list'),
     path('fridge/cook/', views.cook_recipe, name='fridge-cook'),

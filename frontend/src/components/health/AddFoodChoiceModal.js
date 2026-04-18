@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/Health.css';
 
-const AddFoodChoiceModal = ({ onChooseManual, onChooseRecipe, onChooseFridge, onChooseScan, onCancel }) => {
+const AddFoodChoiceModal = ({ onChooseManual, onChooseRecipe, onChooseFridge, onChooseScan, onChooseFoods, onCancel }) => {
   return (
     <div className="choice-modal-overlay" onClick={onCancel}>
       <div className="choice-modal" onClick={e => e.stopPropagation()}>
@@ -13,6 +13,12 @@ const AddFoodChoiceModal = ({ onChooseManual, onChooseRecipe, onChooseFridge, on
             <span className="choice-icon">📷</span>
             <span className="choice-title">Scan Item</span>
             <span className="choice-desc">Scan a barcode to auto-fill nutrition from the product database</span>
+          </button>
+
+          <button className="choice-btn foods-choice" onClick={onChooseFoods}>
+            <span className="choice-icon">🛒</span>
+            <span className="choice-title">From Foods</span>
+            <span className="choice-desc">Log from your food stock — apples, protein bars, etc.</span>
           </button>
 
           <button className="choice-btn fridge-choice" onClick={onChooseFridge}>

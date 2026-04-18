@@ -7,13 +7,14 @@ import AddFoodChoiceModal from '../components/health/AddFoodChoiceModal';
 import RecipeFoodEntry from '../components/health/RecipeFoodEntry';
 import FridgeFoodEntry from '../components/health/FridgeFoodEntry';
 import BarcodeScanner from '../components/health/BarcodeScanner';
+import FoodItemEntry from '../components/health/FoodItemEntry';
 import '../styles/Health.css';
 
 const Health = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dailySummary, setDailySummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState({});
-  // addMode: null | 'manual' | 'recipe' | 'fridge' | 'scan'
+  // addMode: null | 'manual' | 'recipe' | 'fridge' | 'scan' | 'foods'
   const [addMode, setAddMode] = useState(null);
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -201,6 +202,19 @@ const Health = () => {
               />
             )}
 
+            {addMode === 'foods' && (
+              <FoodItemEntry
+                onSubmit={async () => {
+                  await fetchDailySummary(selectedDate);
+                  await fetchMonthlyData(selectedDate);
+                  setAddMode(null);
+                  alert('Food entry logged successfully!');
+                }}
+                onCancel={handleCancelAdd}
+                selectedDate={selectedDate}
+              />
+            )}
+
             {addMode === 'scan' && (
               <BarcodeScanner
                 onSubmit={async () => {
@@ -220,6 +234,7 @@ const Health = () => {
                 onChooseRecipe={() => { setShowChoiceModal(false); setAddMode('recipe'); }}
                 onChooseFridge={() => { setShowChoiceModal(false); setAddMode('fridge'); }}
                 onChooseScan={() => { setShowChoiceModal(false); setAddMode('scan'); }}
+                onChooseFoods={() => { setShowChoiceModal(false); setAddMode('foods'); }}
                 onCancel={() => setShowChoiceModal(false)}
               />
             )}

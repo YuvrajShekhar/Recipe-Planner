@@ -88,6 +88,16 @@ from .activity_views import (
 
 from .upload_views import upload_recipe_image
 
+from .food_views import (
+    food_item_list,
+    food_item_create,
+    food_item_detail,
+    food_pantry_list,
+    food_pantry_add,
+    food_pantry_detail,
+    food_pantry_consume,
+)
+
 from .fridge_views import (
     fridge_list,
     fridge_item_detail,

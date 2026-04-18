@@ -156,6 +156,36 @@ export const fitnessAPI = {
     syncSteps: (date) => API.get('/fitness/sync/', { params: { date } }),
 };
 
+// ==================== FOOD ITEMS APIs ====================
+
+export const foodAPI = {
+    // List all food items created by the user
+    getAll: (params) => API.get('/foods/', { params }),
+
+    // Create a food item (manual or from barcode scan); optional quantity adds to pantry
+    create: (data) => API.post('/foods/create/', data),
+
+    // Update or delete a food item
+    update: (id, data) => API.put(`/foods/${id}/`, data),
+    delete: (id) => API.delete(`/foods/${id}/`),
+};
+
+export const foodPantryAPI = {
+    // List user's food pantry
+    getAll: () => API.get('/food-pantry/'),
+
+    // Add a quantity of a food item to pantry (upserts)
+    add: (foodItemId, quantity) =>
+        API.post('/food-pantry/add/', { food_item_id: foodItemId, quantity }),
+
+    // Set absolute quantity or remove from pantry
+    update: (id, quantity) => API.put(`/food-pantry/${id}/`, { quantity }),
+    remove: (id) => API.delete(`/food-pantry/${id}/`),
+
+    // Log consumption from food pantry → health diary
+    consume: (data) => API.post('/food-pantry/consume/', data),
+};
+
 // ==================== FRIDGE APIs ====================
 
 export const fridgeAPI = {
