@@ -93,6 +93,8 @@ class Pantry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pantry_items')
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='pantry_entries')
     quantity = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    unit     = models.CharField(max_length=30, blank=True, default='',
+                                help_text="Unit for this pantry entry (overrides ingredient default)")
     added_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

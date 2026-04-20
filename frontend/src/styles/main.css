@@ -4076,7 +4076,24 @@ textarea.form-control {
     font-size: 0.82rem;
     color: #6b7280;
     white-space: nowrap;
-    font-weight: 500;
+}
+
+/* Unit select dropdown — used in AddToPantryModal and PantryItem edit */
+.qty-unit-select {
+    padding: 5px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #2c3e50;
+    background: #fff;
+    cursor: pointer;
+    min-width: 80px;
+    max-width: 110px;
+}
+
+.qty-unit-select:focus {
+    outline: none;
+    border-color: #e74c3c;
 }
 
 .selected-item .remove-btn {

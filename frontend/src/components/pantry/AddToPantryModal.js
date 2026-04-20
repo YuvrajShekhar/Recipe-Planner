@@ -50,6 +50,14 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
         return ingredients.filter(ing => !existingIngredientIds.includes(ing.id));
     }, [ingredients, existingIngredientIds]);
 
+    // All unique units that actually exist across all ingredients
+    const allUnits = useMemo(() => {
+        const units = new Set(
+            ingredients.map(ing => ing.unit?.toLowerCase()).filter(Boolean)
+        );
+        return Array.from(units).sort();
+    }, [ingredients]);
+
     const filteredIngredients = useMemo(() => {
         return availableIngredients.filter(ing => {
             const matchesSearch = ing.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -66,9 +74,16 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
         if (isSelected(ingredient.id)) {
             setSelectedIngredients(selectedIngredients.filter(item => item.ingredient_id !== ingredient.id));
         } else {
+            const defaultUnit = (ingredient.unit || '').toLowerCase();
             setSelectedIngredients([
                 ...selectedIngredients,
-                { ingredient_id: ingredient.id, name: ingredient.name, unit: ingredient.unit, quantity: null }
+                {
+                    ingredient_id: ingredient.id,
+                    name:        ingredient.name,
+                    defaultUnit,
+                    unit:        defaultUnit || allUnits[0] || '',
+                    quantity:    null,
+                }
             ]);
         }
     };
@@ -79,6 +94,19 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
                 ? { ...item, quantity: quantity ? parseFloat(quantity) : null }
                 : item
         ));
+    };
+
+    const updateUnit = (ingredientId, unit) => {
+        setSelectedIngredients(selectedIngredients.map(item =>
+            item.ingredient_id === ingredientId ? { ...item, unit } : item
+        ));
+    };
+
+    // Default unit first, then all other units from ingredients db
+    const unitOptions = (defaultUnit) => {
+        const base = defaultUnit ? defaultUnit.toLowerCase() : '';
+        const others = allUnits.filter(u => u !== base);
+        return base ? [base, ...others] : allUnits;
     };
 
     const handleAdd = async () => {
@@ -171,9 +199,15 @@ const AddToPantryModal = ({ isOpen, onClose, onAdd, existingIngredientIds = [] }
                                                 step="0.01"
                                                 min="0"
                                             />
-                                            {item.unit && (
-                                                <span className="qty-unit-label">{item.unit}</span>
-                                            )}
+                                            <select
+                                                className="qty-unit-select"
+                                                value={item.unit || ''}
+                                                onChange={(e) => updateUnit(item.ingredient_id, e.target.value)}
+                                            >
+                                                {unitOptions(item.defaultUnit).map(u => (
+                                                    <option key={u} value={u}>{u}</option>
+                                                ))}
+                                            </select>
                                         </div>
                                         <button
                                             className="remove-btn"

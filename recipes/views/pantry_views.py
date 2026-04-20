@@ -60,7 +60,8 @@ def pantry_add(request):
     """
     ingredient_id = request.data.get('ingredient_id')
     quantity = request.data.get('quantity', None)
-    
+    unit     = request.data.get('unit', '').strip()
+
     if not ingredient_id:
         return Response({
             'message': 'Please provide ingredient_id',
@@ -79,26 +80,25 @@ def pantry_add(request):
     existing_item = Pantry.objects.filter(user=request.user, ingredient=ingredient).first()
     
     if existing_item:
-        # Update quantity if item exists
+        # Update quantity (and unit) if item exists
         if quantity is not None:
             existing_item.quantity = quantity
+        if unit:
+            existing_item.unit = unit
+        if quantity is not None or unit:
             existing_item.save()
-            serializer = PantrySerializer(existing_item)
-            return Response({
-                'message': f'{ingredient.name} quantity updated in pantry',
-                'pantry_item': serializer.data
-            }, status=status.HTTP_200_OK)
-        else:
-            return Response({
-                'message': f'{ingredient.name} is already in your pantry',
-                'pantry_item': PantrySerializer(existing_item).data
-            }, status=status.HTTP_200_OK)
-    
+        serializer = PantrySerializer(existing_item)
+        return Response({
+            'message': f'{ingredient.name} updated in pantry',
+            'pantry_item': serializer.data
+        }, status=status.HTTP_200_OK)
+
     # Create new pantry item
     pantry_item = Pantry.objects.create(
         user=request.user,
         ingredient=ingredient,
-        quantity=quantity
+        quantity=quantity,
+        unit=unit,
     )
     
     serializer = PantrySerializer(pantry_item)
@@ -143,8 +143,9 @@ def pantry_add_multiple(request):
     
     for item_data in ingredients_data:
         ingredient_id = item_data.get('ingredient_id')
-        quantity = item_data.get('quantity', None)
-        
+        quantity      = item_data.get('quantity', None)
+        unit          = item_data.get('unit', '').strip()
+
         if not ingredient_id:
             errors.append({'error': 'Missing ingredient_id', 'data': item_data})
             continue
@@ -161,17 +162,22 @@ def pantry_add_multiple(request):
         if existing_item:
             if quantity is not None:
                 existing_item.quantity = quantity
+            if unit:
+                existing_item.unit = unit
+            if quantity is not None or unit:
                 existing_item.save()
             updated.append({
                 'id': existing_item.id,
                 'ingredient': ingredient.name,
-                'quantity': existing_item.quantity
+                'quantity': existing_item.quantity,
+                'unit': existing_item.unit,
             })
         else:
             pantry_item = Pantry.objects.create(
                 user=request.user,
                 ingredient=ingredient,
-                quantity=quantity
+                quantity=quantity,
+                unit=unit,
             )
             added.append({
                 'id': pantry_item.id,
@@ -231,9 +237,13 @@ def pantry_update(request, pk):
         }, status=status.HTTP_404_NOT_FOUND)
     
     quantity = request.data.get('quantity')
-    
+    unit     = request.data.get('unit', None)
+
     if quantity is not None:
         pantry_item.quantity = quantity
+    if unit is not None:
+        pantry_item.unit = unit.strip()
+    if quantity is not None or unit is not None:
         pantry_item.save()
     
     serializer = PantrySerializer(pantry_item)

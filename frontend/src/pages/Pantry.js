@@ -48,6 +48,16 @@ const Pantry = () => {
         return Array.from(cats).filter(Boolean).sort();
     }, [pantryItems]);
 
+    // All unique units across pantry ingredients (for the unit dropdown)
+    const availableUnits = useMemo(() => {
+        const units = new Set(
+            pantryItems.flatMap(item => [item.unit, item.ingredient?.unit])
+                       .filter(Boolean)
+                       .map(u => u.toLowerCase())
+        );
+        return Array.from(units).sort();
+    }, [pantryItems]);
+
     // Filter pantry items
     const filteredItems = useMemo(() => {
         return pantryItems.filter(item => {
@@ -101,9 +111,9 @@ const Pantry = () => {
         }
     };
 
-    const handleUpdateItem = async (itemId, quantity) => {
+    const handleUpdateItem = async (itemId, quantity, unit) => {
         try {
-            await pantryAPI.update(itemId, quantity);
+            await pantryAPI.update(itemId, quantity, unit);
             setPantryItems(pantryItems.map(item =>
                 item.id === itemId ? { ...item, quantity } : item
             ));
@@ -308,6 +318,7 @@ const Pantry = () => {
                                                     item={item}
                                                     onUpdate={handleUpdateItem}
                                                     onRemove={handleRemoveItem}
+                                                    availableUnits={availableUnits}
                                                 />
                                             ))}
                                         </div>

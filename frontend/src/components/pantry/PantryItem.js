@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 
-const PantryItem = ({ item, onUpdate, onRemove }) => {
+const PantryItem = ({ item, onUpdate, onRemove, availableUnits = [] }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [quantity, setQuantity] = useState(item.quantity || '');
+    // Displayed unit: stored pantry unit → ingredient default → empty
+    const resolvedUnit = item.unit || item.ingredient?.unit || '';
+    const [unit, setUnit] = useState(resolvedUnit);
     const [loading, setLoading] = useState(false);
 
     const getCategoryIcon = (category) => {
@@ -23,7 +26,7 @@ const PantryItem = ({ item, onUpdate, onRemove }) => {
     const handleSave = async () => {
         setLoading(true);
         try {
-            await onUpdate(item.id, quantity ? parseFloat(quantity) : null);
+            await onUpdate(item.id, quantity ? parseFloat(quantity) : null, unit);
             setIsEditing(false);
         } catch (err) {
             console.error('Error updating item:', err);
@@ -82,7 +85,19 @@ const PantryItem = ({ item, onUpdate, onRemove }) => {
                             step="0.01"
                             min="0"
                         />
-                        <span className="unit">{item.ingredient?.unit}</span>
+                        <select
+                            className="qty-unit-select"
+                            value={unit}
+                            onChange={(e) => setUnit(e.target.value)}
+                        >
+                            {/* Always include the current unit even if missing from list */}
+                            {!availableUnits.includes(unit) && unit && (
+                                <option value={unit}>{unit}</option>
+                            )}
+                            {availableUnits.map(u => (
+                                <option key={u} value={u}>{u}</option>
+                            ))}
+                        </select>
                     </div>
                 ) : (
                     <div
@@ -93,10 +108,10 @@ const PantryItem = ({ item, onUpdate, onRemove }) => {
                         {item.quantity ? (
                             <>
                                 <span className="qty-value">{item.quantity}</span>
-                                <span className="qty-unit">{item.ingredient?.unit}</span>
+                                <span className="qty-unit">{unit}</span>
                             </>
                         ) : (
-                            <span className="qty-empty">No qty set</span>
+                            <span className="qty-empty">Tap to set qty</span>
                         )}
                         <span className="edit-icon">✏️</span>
                     </div>
