@@ -54,6 +54,7 @@ export const recipeAPI = {
     getMyRecipes: () => API.get('/recipes/my-recipes/'),
     getByUser: (userId) => API.get(`/recipes/user/${userId}/`),
     search: (query) => API.get('/recipes/', { params: { search: query } }),
+    togglePublic: (id) => API.post(`/recipes/${id}/toggle-public/`),
 };
 
 // ==================== MATCHING APIs ====================

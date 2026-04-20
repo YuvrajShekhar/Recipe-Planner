@@ -21,6 +21,7 @@ from .recipe_views import (
     recipe_delete,
     recipe_by_user,
     my_recipes,
+    recipe_toggle_public,
 )
 
 from .matching_views import (

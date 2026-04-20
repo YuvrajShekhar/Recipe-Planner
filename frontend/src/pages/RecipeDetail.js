@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { recipeAPI, favoritesAPI, pantryAPI } from '../services/api';
 import { Loading, Alert, ConfirmModal } from '../components/common';
 import NutritionCard from '../components/recipes/NutritionCard';
+import ShareRecipeModal from '../components/recipes/ShareRecipeModal';
 
 const RecipeDetail = () => {
     const { id } = useParams();
@@ -17,6 +18,7 @@ const RecipeDetail = () => {
     const [favoriteLoading, setFavoriteLoading] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
     const [pantryIngredients, setPantryIngredients] = useState([]);
     const [pantryLoading, setPantryLoading] = useState(false);
 
@@ -206,22 +208,30 @@ const RecipeDetail = () => {
                     <div className="recipe-detail-info">
                         <div className="recipe-detail-title-row">
                             <h1>{recipe.title}</h1>
-                            {isOwner && (
-                                <div className="owner-actions">
-                                    <Link
-                                        to={`/recipes/${recipe.id}/edit`}
-                                        className="btn btn-small btn-outline"
-                                    >
-                                        ✏️ Edit
-                                    </Link>
-                                    <button
-                                        className="btn btn-small btn-danger"
-                                        onClick={() => setShowDeleteModal(true)}
-                                    >
-                                        🗑️ Delete
-                                    </button>
-                                </div>
-                            )}
+                            <div className="owner-actions">
+                                <button
+                                    className="btn btn-small btn-outline"
+                                    onClick={() => setShowShareModal(true)}
+                                >
+                                    🔗 Share
+                                </button>
+                                {isOwner && (
+                                    <>
+                                        <Link
+                                            to={`/recipes/${recipe.id}/edit`}
+                                            className="btn btn-small btn-outline"
+                                        >
+                                            ✏️ Edit
+                                        </Link>
+                                        <button
+                                            className="btn btn-small btn-danger"
+                                            onClick={() => setShowDeleteModal(true)}
+                                        >
+                                            🗑️ Delete
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         <p className="recipe-detail-description">{recipe.description}</p>
@@ -376,6 +386,18 @@ const RecipeDetail = () => {
                 onCancel={() => setShowDeleteModal(false)}
                 danger
             />
+
+            {/* Share Modal */}
+            {showShareModal && (
+                <ShareRecipeModal
+                    recipe={recipe}
+                    isOwner={isOwner}
+                    onClose={() => setShowShareModal(false)}
+                    onVisibilityChange={(isPublic) =>
+                        setRecipe(r => ({ ...r, is_public: isPublic }))
+                    }
+                />
+            )}
         </div>
     );
 };

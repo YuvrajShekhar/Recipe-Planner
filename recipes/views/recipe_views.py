@@ -259,3 +259,26 @@ def my_recipes(request):
         'count': recipes.count(),
         'recipes': serializer.data
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def recipe_toggle_public(request, pk):
+    """
+    POST /api/recipes/<pk>/toggle-public/
+    Flip is_public on/off for the owner. Returns the new state.
+    """
+    try:
+        recipe = Recipe.objects.get(pk=pk, created_by=request.user)
+    except Recipe.DoesNotExist:
+        return Response({'message': 'Recipe not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    recipe.is_public = not recipe.is_public
+    recipe.save(update_fields=['is_public'])
+
+    return Response({
+        'is_public': recipe.is_public,
+        'message': 'Recipe is now public — anyone with the link can view it.'
+                   if recipe.is_public else
+                   'Recipe is now private.',
+    }, status=status.HTTP_200_OK)
