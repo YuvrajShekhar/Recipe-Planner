@@ -3672,7 +3672,7 @@ textarea.form-control {
 
 .pantry-filters .search-box {
     flex: 1;
-    min-width: 250px;
+    min-width: min(250px, 100%);
     position: relative;
 }
 
@@ -4162,60 +4162,135 @@ textarea.form-control {
     }
 }
 
+/* ── Pantry: tablet (≤768px) ── */
 @media (max-width: 768px) {
+    /* Stats: keep 3 columns, shrink padding & font */
     .pantry-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
     }
 
+    .pantry-stats .stat-card {
+        padding: 14px 10px;
+        gap: 10px;
+    }
+
+    .pantry-stats .stat-icon {
+        font-size: 1.8rem;
+    }
+
+    .pantry-stats .stat-value {
+        font-size: 1.2rem;
+    }
+
+    .pantry-stats .stat-label {
+        font-size: 0.78rem;
+    }
+
+    /* Filters: stack vertically, full-width search */
     .pantry-filters {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
+        margin-bottom: 18px;
     }
 
     .pantry-filters .search-box {
+        min-width: 0;
         width: 100%;
     }
 
+    /* Filter buttons: horizontal scroll strip, no wrapping */
     .filter-buttons {
+        display: flex;
+        flex-wrap: nowrap;
         overflow-x: auto;
-        padding-bottom: 5px;
+        gap: 8px;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
     }
 
+    .filter-buttons::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 7px 13px;
+        font-size: 0.85rem;
+    }
+
+    /* Pantry item: grid layout — name+delete on top row, qty below */
     .pantry-item {
-        flex-wrap: wrap;
-    }
-
-    .pantry-item-icon {
-        width: 40px;
-        font-size: 1.5rem;
+        display: grid;
+        grid-template-areas:
+            "info actions"
+            "qty  qty";
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 8px 12px;
+        padding: 12px 14px;
     }
 
     .pantry-item-info {
-        flex: 1 1 calc(100% - 120px);
-    }
-
-    .pantry-item-quantity {
-        order: 4;
-        flex: 1;
-        min-width: auto;
-    }
-
-    .pantry-item-date {
-        order: 5;
-        min-width: auto;
-        text-align: left;
+        grid-area: info;
+        flex: unset;
     }
 
     .pantry-item-actions {
-        order: 3;
+        grid-area: actions;
+        order: unset;
     }
 
+    .pantry-item-quantity {
+        grid-area: qty;
+        order: unset;
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* Hide date on tablet — low-value info on small screens */
+    .pantry-item-date {
+        display: none;
+    }
+
+    /* Qty display: full width, easy tap target */
+    .quantity-display {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 10px 12px;
+    }
+
+    .quantity-edit {
+        width: 100%;
+    }
+
+    .quantity-edit input {
+        flex: 1;
+    }
+
+    /* Quick-action cards: single column */
     .pantry-actions {
         grid-template-columns: 1fr;
+        gap: 12px;
     }
 
+    .action-card {
+        padding: 16px 18px;
+        gap: 14px;
+    }
+
+    .action-card .action-icon {
+        font-size: 2rem;
+    }
+
+    /* Add-to-pantry modal */
     .modal-controls {
         flex-direction: column;
+        gap: 10px;
     }
 
     .ingredients-grid-modal {
@@ -4223,17 +4298,78 @@ textarea.form-control {
     }
 }
 
+/* ── Pantry: phone (≤480px) ── */
 @media (max-width: 480px) {
+    /* Stats: still 3 columns, even more compact */
+    .pantry-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .pantry-stats .stat-card {
+        padding: 10px 8px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .pantry-stats .stat-icon {
+        font-size: 1.4rem;
+    }
+
+    .pantry-stats .stat-value {
+        font-size: 1rem;
+        line-height: 1.2;
+    }
+
+    .pantry-stats .stat-label {
+        font-size: 0.7rem;
+        line-height: 1.2;
+    }
+
+    /* Pantry item: tighter on phone */
     .pantry-item {
-        padding: 12px 15px;
+        padding: 10px 12px;
+        gap: 6px 10px;
     }
 
-    .pantry-item-quantity,
-    .pantry-item-date {
+    .pantry-item-name {
+        font-size: 0.95rem;
+    }
+
+    .pantry-item-category {
+        font-size: 0.78rem;
+    }
+
+    /* Full-width qty input on phone */
+    .pantry-item-quantity {
         width: 100%;
-        margin-top: 10px;
     }
 
+    .quantity-display {
+        padding: 9px 10px;
+        font-size: 0.9rem;
+    }
+
+    /* Action card: tighter */
+    .action-card {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .action-card .action-icon {
+        font-size: 1.6rem;
+    }
+
+    .action-card .action-info h4 {
+        font-size: 0.95rem;
+    }
+
+    .action-card .action-info p {
+        font-size: 0.82rem;
+    }
+
+    /* Modal ingredients: single column */
     .ingredients-grid-modal {
         grid-template-columns: 1fr;
     }
