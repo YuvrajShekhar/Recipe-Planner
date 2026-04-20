@@ -97,7 +97,8 @@ const Pantry = () => {
         try {
             const formattedIngredients = ingredients.map(ing => ({
                 ingredient_id: ing.ingredient_id,
-                quantity: ing.quantity
+                quantity: ing.quantity,
+                unit: ing.unit || '',
             }));
 
             await pantryAPI.addMultiple(formattedIngredients);
