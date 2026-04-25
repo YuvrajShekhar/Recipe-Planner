@@ -6,11 +6,16 @@
     box-sizing: border-box;
 }
 
+html {
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: #333;
     background-color: #f5f5f5;
+    overflow-x: hidden;
 }
 
 a {
@@ -390,6 +395,10 @@ select {
     .grid-3,
     .grid-4 {
         grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 0 14px;
     }
 }
 
@@ -2718,10 +2727,12 @@ select {
 
     .owner-actions {
         width: 100%;
+        flex-wrap: wrap;
     }
 
     .owner-actions .btn {
         flex: 1;
+        min-width: 0;
     }
 
     .recipe-detail-meta {
