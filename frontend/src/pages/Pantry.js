@@ -112,11 +112,13 @@ const Pantry = () => {
         }
     };
 
-    const handleUpdateItem = async (itemId, quantity, unit) => {
+    const handleUpdateItem = async (itemId, quantity, unit, low_stock_threshold, low_stock_unit) => {
         try {
-            await pantryAPI.update(itemId, quantity, unit);
+            await pantryAPI.update(itemId, quantity, unit, low_stock_threshold, low_stock_unit);
             setPantryItems(pantryItems.map(item =>
-                item.id === itemId ? { ...item, quantity } : item
+                item.id === itemId
+                    ? { ...item, quantity, unit, low_stock_threshold, low_stock_unit }
+                    : item
             ));
             setSuccess('Quantity updated');
             setTimeout(() => setSuccess(''), 2000);

@@ -78,7 +78,8 @@ export const pantryAPI = {
     addMultiple: (ingredients) =>
         API.post('/pantry/add-multiple/', { ingredients }),
     getById: (id) => API.get(`/pantry/${id}/`),
-    update: (id, quantity, unit) => API.put(`/pantry/${id}/update/`, { quantity, unit }),
+    update: (id, quantity, unit, low_stock_threshold, low_stock_unit) =>
+        API.put(`/pantry/${id}/update/`, { quantity, unit, low_stock_threshold, low_stock_unit }),
     remove: (id) => API.delete(`/pantry/${id}/remove/`),
     clear: () => API.delete('/pantry/clear/'),
     check: (ingredientId) => API.get(`/pantry/check/${ingredientId}/`),

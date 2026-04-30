@@ -236,15 +236,20 @@ def pantry_update(request, pk):
             'message': 'Pantry item not found'
         }, status=status.HTTP_404_NOT_FOUND)
     
-    quantity = request.data.get('quantity')
-    unit     = request.data.get('unit', None)
+    quantity            = request.data.get('quantity')
+    unit                = request.data.get('unit', None)
+    low_stock_threshold = request.data.get('low_stock_threshold', None)
+    low_stock_unit      = request.data.get('low_stock_unit', None)
 
     if quantity is not None:
         pantry_item.quantity = quantity
     if unit is not None:
         pantry_item.unit = unit.strip()
-    if quantity is not None or unit is not None:
-        pantry_item.save()
+    if low_stock_threshold is not None:
+        pantry_item.low_stock_threshold = low_stock_threshold if low_stock_threshold != '' else None
+    if low_stock_unit is not None:
+        pantry_item.low_stock_unit = low_stock_unit.strip()
+    pantry_item.save()
     
     serializer = PantrySerializer(pantry_item)
     

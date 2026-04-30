@@ -200,7 +200,7 @@ class PantrySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Pantry
-        fields = ['id', 'ingredient', 'ingredient_id', 'quantity', 'unit', 'added_at']
+        fields = ['id', 'ingredient', 'ingredient_id', 'quantity', 'unit', 'low_stock_threshold', 'low_stock_unit', 'added_at']
         read_only_fields = ['id', 'added_at']
 
 
