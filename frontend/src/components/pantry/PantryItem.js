@@ -100,7 +100,7 @@ const PantryItem = ({ item, onUpdate, onRemove, availableUnits = [] }) => {
                                 onKeyDown={handleKeyPress}
                                 placeholder="Qty"
                                 autoFocus
-                                step="0.01"
+                                step="0.001"
                                 min="0"
                             />
                             <select
@@ -125,7 +125,7 @@ const PantryItem = ({ item, onUpdate, onRemove, availableUnits = [] }) => {
                                 onChange={(e) => setThreshold(e.target.value)}
                                 onKeyDown={handleKeyPress}
                                 placeholder="—"
-                                step="0.01"
+                                step="0.001"
                                 min="0"
                             />
                             <select

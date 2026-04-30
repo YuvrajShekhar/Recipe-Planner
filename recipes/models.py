@@ -92,10 +92,10 @@ class Pantry(models.Model):
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pantry_items')
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='pantry_entries')
-    quantity              = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    quantity              = models.DecimalField(max_digits=9, decimal_places=3, blank=True, null=True)
     unit                  = models.CharField(max_length=30, blank=True, default='',
                                              help_text="Unit for this pantry entry (overrides ingredient default)")
-    low_stock_threshold   = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True,
+    low_stock_threshold   = models.DecimalField(max_digits=9, decimal_places=3, blank=True, null=True,
                                                 help_text="Alert when quantity drops below this value")
     low_stock_unit        = models.CharField(max_length=30, blank=True, default='',
                                              help_text="Unit for the low-stock threshold")
