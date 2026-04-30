@@ -373,3 +373,56 @@
   .foods-form-row { grid-template-columns: 1fr; }
   .foods-nutrition-row { grid-template-columns: repeat(3, 1fr); }
 }
+
+@media (max-width: 600px) {
+  /* Bottom-sheet modal on mobile */
+  .foods-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .foods-modal-overlay .foods-modal {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 92vh;
+  }
+
+  /* Drag handle hint */
+  .foods-modal-overlay .modal-header::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: #d1d5db;
+    border-radius: 99px;
+  }
+
+  .foods-modal-overlay .modal-header {
+    position: relative;
+    padding-top: 1.75rem;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .foods-modal-body {
+    padding: 0.75rem 1rem 1.5rem;
+    max-height: calc(92vh - 64px);
+  }
+
+  .foods-nutrition-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Keep action buttons full-width and stacked */
+  .foods-modal-overlay .modal-actions {
+    flex-direction: column;
+  }
+
+  .foods-modal-overlay .modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

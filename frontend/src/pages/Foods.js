@@ -414,7 +414,7 @@ const Foods = () => {
 
       {/* ── Scan Modal ── */}
       {addMode === 'scan' && (
-        <div className="modal-overlay" onClick={closeModal}>
+        <div className="modal-overlay foods-modal-overlay" onClick={closeModal}>
           <div className="modal-box foods-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Scan Barcode</h2>
@@ -506,7 +506,7 @@ const Foods = () => {
 
       {/* ── Manual Modal ── */}
       {addMode === 'manual' && (
-        <div className="modal-overlay" onClick={closeModal}>
+        <div className="modal-overlay foods-modal-overlay" onClick={closeModal}>
           <div className="modal-box foods-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Add Food Item</h2>

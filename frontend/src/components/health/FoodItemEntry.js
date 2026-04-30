@@ -87,9 +87,11 @@ const FoodItemEntry = ({ onSubmit, onCancel, selectedDate }) => {
     <div className="fridge-entry-form">
       <h3>Log from Foods</h3>
 
-      {foods.length === 0 ? (
+      {foods.filter(f => stockMap[f.id] && parseFloat(stockMap[f.id].quantity) > 0).length === 0 ? (
         <p className="fridge-entry-empty">
-          No food items yet. Go to the <strong>Foods</strong> page to add items.
+          {foods.length === 0
+            ? <>No food items yet. Go to the <strong>Foods</strong> page to add items.</>
+            : <>No food items currently in stock. Go to the <strong>Foods</strong> page to restock.</>}
         </p>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -97,20 +99,16 @@ const FoodItemEntry = ({ onSubmit, onCancel, selectedDate }) => {
             <label>Food Item</label>
             <select className="form-control" value={selectedId}
               onChange={e => { setSelectedId(e.target.value); setServings(1); setConfirmed(false); }}>
-              <option value="">— select a food item —</option>
-              {foods.map(food => {
-                const stock = stockMap[food.id];
-                const stockLabel = stock
-                  ? ` — ${parseFloat(stock.quantity)} in stock`
-                  : ' — out of stock';
-                return (
+                      <option value="">- select a food item -</option>
+              {foods
+                .filter(food => stockMap[food.id] && parseFloat(stockMap[food.id].quantity) > 0)
+                .map(food => (
                   <option key={food.id} value={food.id}>
                     {food.name}
                     {food.brand ? ` (${food.brand})` : ''}
-                    {stockLabel}
+                    {` - ${parseFloat(stockMap[food.id].quantity)} in stock`}
                   </option>
-                );
-              })}
+                ))}
             </select>
           </div>
 
