@@ -252,7 +252,7 @@ class FitnessLog(models.Model):
     date = models.DateField(help_text="Date of the fitness activity")
     steps = models.PositiveIntegerField(default=0, help_text="Number of steps walked")
     weight_kg = models.DecimalField(
-        max_digits=5, decimal_places=1, null=True, blank=True,
+        max_digits=6, decimal_places=2, null=True, blank=True,
         help_text="Body weight recorded on this day (kg)"
     )
     notes = models.TextField(blank=True, help_text="Optional notes")
@@ -384,7 +384,7 @@ class UserProfile(models.Model):
         help_text="Height in centimetres"
     )
     weight_kg = models.DecimalField(
-        max_digits=5, decimal_places=1, null=True, blank=True,
+        max_digits=6, decimal_places=2, null=True, blank=True,
         help_text="Weight in kilograms"
     )
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)

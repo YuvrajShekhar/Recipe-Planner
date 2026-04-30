@@ -425,7 +425,7 @@ const Fitness = () => {
               <h3>Body Weight</h3>
               {weightKg != null ? (
                 <div className="weight-display">
-                  <span className="weight-display-val">{weightKg.toFixed(1)}</span>
+                  <span className="weight-display-val">{weightKg.toFixed(2).replace(/\.?0+$/, '')}</span>
                   <span className="weight-display-unit">kg</span>
                 </div>
               ) : (

@@ -94,7 +94,7 @@ const StepsPanel = ({ date, dailyLog, onSave, onDelete, saving, loading }) => {
               placeholder="—"
               min="0"
               max="500"
-              step="0.1"
+              step="0.01"
             />
             <span className="steps-input-label">kg body weight</span>
           </div>
