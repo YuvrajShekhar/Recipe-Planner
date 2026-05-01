@@ -4298,6 +4298,15 @@ textarea.form-control {
         font-size: 0.85rem;
     }
 
+    /* Clear All button: full-width, clearly separated */
+    .pantry-filters .btn-danger-outline {
+        width: 100%;
+        padding: 12px;
+        font-size: 0.95rem;
+        border-radius: 10px;
+        margin-top: 4px;
+    }
+
     /* Pantry item: grid layout — name+delete on top row, qty below */
     .pantry-item {
         display: grid;
