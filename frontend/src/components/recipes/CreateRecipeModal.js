@@ -9,7 +9,7 @@ const UNITS = [
   'pieces', 'whole', 'slices', 'cloves', 'pinch',
 ];
 
-const EMPTY_INGREDIENT_ROW = { ingredient_id: '', quantity: '', unit: 'grams' };
+const EMPTY_INGREDIENT_ROW = { ingredient_id: '', quantity: '', unit: 'grams', unitTouched: false };
 
 const CreateRecipeModal = ({ onCreated, onClose }) => {
   const [form, setForm] = useState({
@@ -72,8 +72,8 @@ const CreateRecipeModal = ({ onCreated, onClose }) => {
   // Called when user picks an ingredient from the select
   const handleIngredientSelect = (i, ingredientId) => {
     updateRow(i, 'ingredient_id', ingredientId);
-    // Auto-fill unit from ingredient's default unit
-    if (ingredientId) {
+    // Only auto-fill unit if the user hasn't manually picked one for this row
+    if (ingredientId && !ingredientRows[i].unitTouched) {
       const ing = allIngredients.find(ing => String(ing.id) === String(ingredientId));
       if (ing?.unit) {
         const match = UNITS.find(u => ing.unit.toLowerCase().includes(u.toLowerCase()));
@@ -94,8 +94,11 @@ const CreateRecipeModal = ({ onCreated, onClose }) => {
     setAllIngredients(prev => [...prev, ingredient]);
     if (addingForRow !== null) {
       updateRow(addingForRow, 'ingredient_id', String(ingredient.id));
-      const match = UNITS.find(u => ingredient.unit.toLowerCase().includes(u.toLowerCase()));
-      updateRow(addingForRow, 'unit', match || ingredient.unit || 'grams');
+      // Only auto-fill unit if the user hasn't manually picked one for this row
+      if (!ingredientRows[addingForRow]?.unitTouched && ingredient.unit) {
+        const match = UNITS.find(u => ingredient.unit.toLowerCase().includes(u.toLowerCase()));
+        updateRow(addingForRow, 'unit', match || ingredient.unit || 'grams');
+      }
     }
     setShowNewIngredient(false);
     setAddingForRow(null);
@@ -285,7 +288,10 @@ const CreateRecipeModal = ({ onCreated, onClose }) => {
                   <select
                     className="form-control cr-unit-select"
                     value={row.unit}
-                    onChange={e => updateRow(i, 'unit', e.target.value)}
+                    onChange={e => {
+                      updateRow(i, 'unit', e.target.value);
+                      updateRow(i, 'unitTouched', true);
+                    }}
                   >
                     {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
                   </select>
