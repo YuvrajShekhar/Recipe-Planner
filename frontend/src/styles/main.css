@@ -6420,3 +6420,93 @@ textarea.form-control {
         flex: 1;
     }
 }
+
+/* ==================== SERVINGS SCALER ==================== */
+
+.ingredients-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.ingredients-header h2 {
+    margin: 0;
+}
+
+.servings-scaler {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.35rem 0.75rem;
+}
+
+.scaler-btn {
+    width: 1.8rem;
+    height: 1.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--white);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    color: var(--text-primary);
+}
+
+.scaler-btn:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+.scaler-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.scaler-input {
+    width: 4rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.25rem 0.3rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    -moz-appearance: textfield;
+}
+
+.scaler-input::-webkit-outer-spin-button,
+.scaler-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+.scaler-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.scaler-reset {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 0 0.2rem;
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .ingredients-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

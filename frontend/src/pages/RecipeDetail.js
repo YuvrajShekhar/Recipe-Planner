@@ -21,6 +21,7 @@ const RecipeDetail = () => {
     const [showShareModal, setShowShareModal] = useState(false);
     const [pantryIngredients, setPantryIngredients] = useState([]);
     const [pantryLoading, setPantryLoading] = useState(false);
+    const [servings, setServings] = useState(null);
 
     useEffect(() => {
         loadRecipe();
@@ -37,6 +38,7 @@ const RecipeDetail = () => {
             const response = await recipeAPI.getById(id);
             setRecipe(response.data.recipe);
             setIsFavorited(response.data.recipe.is_favorited || false);
+            setServings(response.data.recipe.servings || 1);
 
         } catch (err) {
             console.error('Error loading recipe:', err);
@@ -146,6 +148,19 @@ const RecipeDetail = () => {
     };
 
     const isOwner = isAuthenticated && user && recipe?.created_by?.id === user.id;
+
+    const scaleQty = (originalQty) => {
+        if (!recipe?.servings || servings === null) return originalQty;
+        const scaled = parseFloat(originalQty) * (servings / recipe.servings);
+        const rounded = Math.round(scaled * 100) / 100;
+        return Number.isInteger(rounded) ? rounded : parseFloat(rounded.toFixed(2));
+    };
+
+    const handleServingsChange = (val) => {
+        const n = parseFloat(val);
+        if (isNaN(n)) return;
+        setServings(Math.min(20, Math.max(0.1, n)));
+    };
 
     if (loading) {
         return (
@@ -302,7 +317,37 @@ const RecipeDetail = () => {
                     </div>
                     {/* Ingredients Section */}
                     <div className="recipe-section ingredients-section">
-                        <h2>🥗 Ingredients</h2>
+                        <div className="ingredients-header">
+                            <h2>🥗 Ingredients</h2>
+                            <div className="servings-scaler">
+                                <button
+                                    className="scaler-btn"
+                                    onClick={() => handleServingsChange((servings - 0.5).toFixed(1))}
+                                    disabled={servings <= 0.1}
+                                >−</button>
+                                <input
+                                    type="number"
+                                    className="scaler-input"
+                                    value={servings ?? recipe.servings}
+                                    min="0.1"
+                                    max="20"
+                                    step="0.1"
+                                    onChange={e => handleServingsChange(e.target.value)}
+                                />
+                                <button
+                                    className="scaler-btn"
+                                    onClick={() => handleServingsChange((servings + 0.5).toFixed(1))}
+                                    disabled={servings >= 20}
+                                >+</button>
+                                <span className="scaler-label">servings</span>
+                                {servings !== recipe.servings && (
+                                    <button
+                                        className="scaler-reset"
+                                        onClick={() => setServings(recipe.servings)}
+                                    >reset</button>
+                                )}
+                            </div>
+                        </div>
                         <p className="section-subtitle">
                             {recipe.recipe_ingredients?.length || 0} ingredients needed
                             {isAuthenticated && !pantryLoading && (
@@ -320,7 +365,7 @@ const RecipeDetail = () => {
                                             {isInPantry(ri.ingredient.id) ? '✓' : '○'}
                                         </span>
                                         <span className="ingredient-quantity">
-                                            {ri.quantity} {ri.unit}
+                                            {scaleQty(ri.quantity)} {ri.unit}
                                         </span>
                                         <span className="ingredient-name">
                                             {ri.ingredient.name}
