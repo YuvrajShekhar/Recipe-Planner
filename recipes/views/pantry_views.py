@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import F, Q
 from ..models import Pantry, Ingredient
 from ..serializers import PantrySerializer, IngredientSerializer
 
@@ -353,4 +354,25 @@ def pantry_ingredient_ids(request):
     return Response({
         'count': len(ingredient_ids),
         'ingredient_ids': ingredient_ids
+    }, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pantry_low_stock(request):
+    """
+    Return pantry items that are below their low-stock alert threshold.
+
+    GET /api/pantry/low-stock/
+    """
+    items = Pantry.objects.filter(
+        user=request.user,
+        low_stock_threshold__isnull=False,
+    ).filter(
+        Q(quantity__isnull=True) | Q(quantity__lt=F('low_stock_threshold'))
+    ).select_related('ingredient')
+
+    serializer = PantrySerializer(items, many=True)
+    return Response({
+        'count': items.count(),
+        'pantry_items': serializer.data,
     }, status=status.HTTP_200_OK)

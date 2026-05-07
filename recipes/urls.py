@@ -41,6 +41,7 @@ urlpatterns = [
     path('pantry/add/', views.pantry_add, name='pantry-add'),
     path('pantry/add-multiple/', views.pantry_add_multiple, name='pantry-add-multiple'),
     path('pantry/clear/', views.pantry_clear, name='pantry-clear'),
+    path('pantry/low-stock/', views.pantry_low_stock, name='pantry-low-stock'),
     path('pantry/ingredient-ids/', views.pantry_ingredient_ids, name='pantry-ingredient-ids'),
     path('pantry/check/<int:ingredient_id>/', views.pantry_check_ingredient, name='pantry-check'),
     path('pantry/<int:pk>/', views.pantry_detail, name='pantry-detail'),

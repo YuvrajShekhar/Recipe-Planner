@@ -41,6 +41,7 @@ from .pantry_views import (
     pantry_clear,
     pantry_check_ingredient,
     pantry_ingredient_ids,
+    pantry_low_stock,
 )
 
 from .favorite_views import (

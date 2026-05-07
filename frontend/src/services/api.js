@@ -84,6 +84,7 @@ export const pantryAPI = {
     clear: () => API.delete('/pantry/clear/'),
     check: (ingredientId) => API.get(`/pantry/check/${ingredientId}/`),
     getIngredientIds: () => API.get('/pantry/ingredient-ids/'),
+    getLowStock: () => API.get('/pantry/low-stock/'),
 };
 
 // ==================== FAVORITES APIs ====================

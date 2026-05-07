@@ -25,6 +25,7 @@ import Health from './pages/Health';
 import Fitness from './pages/Fitness';
 import Fridge from './pages/Fridge';
 import Foods from './pages/Foods';
+import ShoppingCart from './pages/ShoppingCart';
 import NotFound from './pages/NotFound';
 
 // Styles
@@ -110,6 +111,14 @@ function App() {
                                     element={
                                         <ProtectedRoute>
                                             <Fridge />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/shopping-cart"
+                                    element={
+                                        <ProtectedRoute>
+                                            <ShoppingCart />
                                         </ProtectedRoute>
                                     }
                                 />

@@ -114,6 +114,15 @@ const Navbar = () => {
                             </li>
                             <li>
                                 <Link
+                                    to="/shopping-cart"
+                                    className={isActive('/shopping-cart')}
+                                    onClick={closeMobileMenu}
+                                >
+                                    🛒 Cart
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
                                     to="/fitness"
                                     className={isActive('/fitness')}
                                     onClick={closeMobileMenu}
