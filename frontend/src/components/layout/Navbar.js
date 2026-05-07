@@ -78,11 +78,11 @@ const Navbar = () => {
                             </li>
                             <li>
                                 <Link
-                                    to="/favorites"
-                                    className={isActive('/favorites')}
+                                    to="/shopping-cart"
+                                    className={isActive('/shopping-cart')}
                                     onClick={closeMobileMenu}
                                 >
-                                    Favorites
+                                    🛒 Cart
                                 </Link>
                             </li>
                             <li>
@@ -110,15 +110,6 @@ const Navbar = () => {
                                     onClick={closeMobileMenu}
                                 >
                                     Fridge
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/shopping-cart"
-                                    className={isActive('/shopping-cart')}
-                                    onClick={closeMobileMenu}
-                                >
-                                    🛒 Cart
                                 </Link>
                             </li>
                             <li>

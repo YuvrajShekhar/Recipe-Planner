@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { recipeAPI } from '../services/api';
+import { recipeAPI, favoritesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { RecipeCard, CreateRecipeModal } from '../components/recipes';
-import { Loading, Alert, PageHeader, EmptyState } from '../components/common';
+import { FavoriteCard } from '../components/favorites';
+import { Loading, Alert, PageHeader, EmptyState, ConfirmModal } from '../components/common';
 import { useDocumentTitle } from '../hooks';
 
 const Recipes = () => {
@@ -12,27 +13,41 @@ const Recipes = () => {
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
-    // Tab: 'browse' | 'mine'
+    // Tab: 'browse' | 'mine' | 'favorites'
     const [tab, setTab] = useState('browse');
     const [showCreateModal, setShowCreateModal] = useState(false);
 
-    // Browse tab state
+    // ── Browse tab state ─────────────────────────────────────────────────────
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // My Recipes tab state
+    // ── My Recipes tab state ─────────────────────────────────────────────────
     const [myRecipes, setMyRecipes] = useState([]);
     const [myLoading, setMyLoading] = useState(false);
     const [myError, setMyError] = useState('');
 
-    // Filters
+    // ── Favorites tab state ──────────────────────────────────────────────────
+    const [favorites, setFavorites] = useState([]);
+    const [favLoading, setFavLoading] = useState(false);
+    const [favError, setFavError] = useState('');
+    const [favSuccess, setFavSuccess] = useState('');
+    const [pantryMatchData, setPantryMatchData] = useState({});
+    const [loadingPantryMatch, setLoadingPantryMatch] = useState(false);
+    const [favSearch, setFavSearch] = useState('');
+    const [favDifficulty, setFavDifficulty] = useState('all');
+    const [favSortBy, setFavSortBy] = useState('saved_at');
+    const [showCanMakeOnly, setShowCanMakeOnly] = useState(false);
+    const [showClearModal, setShowClearModal] = useState(false);
+    const [clearLoading, setClearLoading] = useState(false);
+    const [viewMode, setViewMode] = useState('grid');
+
+    // ── Browse filters ───────────────────────────────────────────────────────
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const [difficulty, setDifficulty] = useState(searchParams.get('difficulty') || '');
     const [preference, setPreference] = useState(searchParams.get('preference') || '');
     const [maxTime, setMaxTime] = useState(searchParams.get('max_time') || '');
     const [ordering, setOrdering] = useState(searchParams.get('ordering') || '-created_at');
-
     const [totalCount, setTotalCount] = useState(0);
 
     // ── Loaders ──────────────────────────────────────────────────────────────
@@ -72,10 +87,46 @@ const Recipes = () => {
         }
     }, [isAuthenticated]);
 
+    const loadFavorites = useCallback(async () => {
+        if (!isAuthenticated) return;
+        try {
+            setFavLoading(true);
+            setFavError('');
+            const res = await favoritesAPI.getAll();
+            setFavorites(res.data.favorites || []);
+        } catch {
+            setFavError('Failed to load favorites.');
+        } finally {
+            setFavLoading(false);
+        }
+    }, [isAuthenticated]);
+
+    const loadPantryMatch = useCallback(async () => {
+        if (!isAuthenticated) return;
+        try {
+            setLoadingPantryMatch(true);
+            const res = await favoritesAPI.withPantryMatch();
+            const matchMap = {};
+            (res.data.favorites || []).forEach(fav => {
+                if (fav.pantry_match) matchMap[fav.recipe?.id] = fav.pantry_match;
+            });
+            setPantryMatchData(matchMap);
+        } catch {
+            // non-critical, silently ignore
+        } finally {
+            setLoadingPantryMatch(false);
+        }
+    }, [isAuthenticated]);
+
     useEffect(() => { loadRecipes(); }, [loadRecipes]);
     useEffect(() => { if (tab === 'mine') loadMyRecipes(); }, [tab, loadMyRecipes]);
+    useEffect(() => {
+        if (tab === 'favorites') {
+            loadFavorites();
+            loadPantryMatch();
+        }
+    }, [tab, loadFavorites, loadPantryMatch]);
 
-    // Update URL params when filters change
     useEffect(() => {
         const params = new URLSearchParams();
         if (searchQuery) params.set('search', searchQuery);
@@ -86,28 +137,73 @@ const Recipes = () => {
         setSearchParams(params, { replace: true });
     }, [searchQuery, difficulty, preference, maxTime, ordering, setSearchParams]);
 
+    // ── Favorites computed ───────────────────────────────────────────────────
+
+    const difficultyCounts = useMemo(() => {
+        const counts = { easy: 0, medium: 0, hard: 0 };
+        favorites.forEach(fav => {
+            const d = fav.recipe?.difficulty;
+            if (d && d in counts) counts[d]++;
+        });
+        return counts;
+    }, [favorites]);
+
+    const canMakeCount = useMemo(() =>
+        Object.values(pantryMatchData).filter(m => m.can_make_now).length,
+    [pantryMatchData]);
+
+    const filteredFavorites = useMemo(() => {
+        let result = [...favorites];
+        if (favSearch) {
+            const q = favSearch.toLowerCase();
+            result = result.filter(f =>
+                f.recipe?.title?.toLowerCase().includes(q) ||
+                f.recipe?.description?.toLowerCase().includes(q)
+            );
+        }
+        if (favDifficulty !== 'all') {
+            result = result.filter(f => f.recipe?.difficulty === favDifficulty);
+        }
+        if (showCanMakeOnly) {
+            result = result.filter(f => pantryMatchData[f.recipe?.id]?.can_make_now);
+        }
+        result.sort((a, b) => {
+            if (favSortBy === 'title')
+                return (a.recipe?.title || '').localeCompare(b.recipe?.title || '');
+            if (favSortBy === 'difficulty') {
+                const o = { easy: 1, medium: 2, hard: 3 };
+                return (o[a.recipe?.difficulty] || 0) - (o[b.recipe?.difficulty] || 0);
+            }
+            if (favSortBy === 'time') {
+                const ta = (a.recipe?.prep_time || 0) + (a.recipe?.cook_time || 0);
+                const tb = (b.recipe?.prep_time || 0) + (b.recipe?.cook_time || 0);
+                return ta - tb;
+            }
+            if (favSortBy === 'match') {
+                const ma = pantryMatchData[a.recipe?.id]?.match_percentage || 0;
+                const mb = pantryMatchData[b.recipe?.id]?.match_percentage || 0;
+                return mb - ma;
+            }
+            return new Date(b.saved_at) - new Date(a.saved_at);
+        });
+        return result;
+    }, [favorites, favSearch, favDifficulty, showCanMakeOnly, favSortBy, pantryMatchData]);
+
     // ── Handlers ─────────────────────────────────────────────────────────────
 
     const handleSearch = (e) => { e.preventDefault(); loadRecipes(); };
 
     const handleClearFilters = () => {
-        setSearchQuery('');
-        setDifficulty('');
-        setPreference('');
-        setMaxTime('');
-        setOrdering('-created_at');
+        setSearchQuery(''); setDifficulty(''); setPreference('');
+        setMaxTime(''); setOrdering('-created_at');
     };
 
     const handleFavoriteToggle = (recipeId, isFavorited) => {
-        setRecipes(prev =>
-            prev.map(r => r.id === recipeId ? { ...r, is_favorited: isFavorited } : r)
-        );
+        setRecipes(prev => prev.map(r => r.id === recipeId ? { ...r, is_favorited: isFavorited } : r));
     };
 
     const handleMyFavoriteToggle = (recipeId, isFavorited) => {
-        setMyRecipes(prev =>
-            prev.map(r => r.id === recipeId ? { ...r, is_favorited: isFavorited } : r)
-        );
+        setMyRecipes(prev => prev.map(r => r.id === recipeId ? { ...r, is_favorited: isFavorited } : r));
     };
 
     const handleRecipeCreated = (recipe) => {
@@ -121,14 +217,41 @@ const Recipes = () => {
         try {
             await recipeAPI.delete(recipeId);
             setMyRecipes(prev => prev.filter(r => r.id !== recipeId));
-            // Also remove from browse list if it was public
             setRecipes(prev => prev.filter(r => r.id !== recipeId));
         } catch {
             setMyError('Failed to delete recipe.');
         }
     };
 
+    const handleRemoveFavorite = async (favoriteId) => {
+        try {
+            await favoritesAPI.remove(favoriteId);
+            setFavorites(prev => prev.filter(f => f.id !== favoriteId));
+            setFavSuccess('Removed from favorites');
+            setTimeout(() => setFavSuccess(''), 2000);
+        } catch {
+            setFavError('Failed to remove favorite.');
+        }
+    };
+
+    const handleClearFavorites = async () => {
+        setClearLoading(true);
+        try {
+            await favoritesAPI.clear();
+            setFavorites([]);
+            setPantryMatchData({});
+            setFavSuccess('All favorites cleared');
+            setTimeout(() => setFavSuccess(''), 3000);
+        } catch {
+            setFavError('Failed to clear favorites.');
+        } finally {
+            setClearLoading(false);
+            setShowClearModal(false);
+        }
+    };
+
     const hasActiveFilters = searchQuery || difficulty || preference || maxTime || ordering !== '-created_at';
+    const hasFavFilters = favSearch || favDifficulty !== 'all' || showCanMakeOnly;
 
     // ── Render ────────────────────────────────────────────────────────────────
 
@@ -152,6 +275,14 @@ const Recipes = () => {
                                 My Recipes
                             </button>
                         )}
+                        {isAuthenticated && (
+                            <button
+                                className={`recipes-tab ${tab === 'favorites' ? 'active' : ''}`}
+                                onClick={() => setTab('favorites')}
+                            >
+                                Favorites
+                            </button>
+                        )}
                     </div>
                     {isAuthenticated && (
                         <button className="btn btn-primary btn-create-recipe"
@@ -169,7 +300,6 @@ const Recipes = () => {
                             subtitle={`${totalCount} delicious recipes to explore`}
                         />
 
-                        {/* Filters */}
                         <div className="filters-section">
                             <form className="search-form" onSubmit={handleSearch}>
                                 <div className="search-input-group">
@@ -301,11 +431,9 @@ const Recipes = () => {
                             <EmptyState
                                 icon="🍳"
                                 title="No recipes found"
-                                message={
-                                    hasActiveFilters
-                                        ? "Try adjusting your filters or search query"
-                                        : "No public recipes yet."
-                                }
+                                message={hasActiveFilters
+                                    ? "Try adjusting your filters or search query"
+                                    : "No public recipes yet."}
                                 actionText={hasActiveFilters ? "Clear Filters" : null}
                                 onAction={hasActiveFilters ? handleClearFilters : null}
                             />
@@ -362,6 +490,158 @@ const Recipes = () => {
                         )}
                     </>
                 )}
+
+                {/* ── Favorites Tab ── */}
+                {tab === 'favorites' && isAuthenticated && (
+                    <>
+                        <PageHeader
+                            title="My Favorites"
+                            subtitle={`${favorites.length} saved recipe${favorites.length !== 1 ? 's' : ''}`}
+                        >
+                            {favorites.length > 0 && (
+                                <div className="view-toggle">
+                                    <button
+                                        className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                                        onClick={() => setViewMode('grid')} title="Grid view">▦</button>
+                                    <button
+                                        className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+                                        onClick={() => setViewMode('list')} title="List view">☰</button>
+                                </div>
+                            )}
+                        </PageHeader>
+
+                        {favError && <Alert type="error" message={favError} onClose={() => setFavError('')} />}
+                        {favSuccess && <Alert type="success" message={favSuccess} onClose={() => setFavSuccess('')} />}
+
+                        {favLoading ? (
+                            <Loading message="Loading your favorites..." />
+                        ) : favorites.length === 0 ? (
+                            <EmptyState
+                                icon="❤️"
+                                title="No favorites yet"
+                                message="Browse recipes and tap the heart to save your favorites here."
+                                actionText="Browse Recipes"
+                                onAction={() => setTab('browse')}
+                            />
+                        ) : (
+                            <>
+                                {/* Stats */}
+                                <div className="favorites-stats">
+                                    <div className="stat-card">
+                                        <div className="stat-icon">❤️</div>
+                                        <div className="stat-info">
+                                            <span className="stat-value">{favorites.length}</span>
+                                            <span className="stat-label">Total Saved</span>
+                                        </div>
+                                    </div>
+                                    <div
+                                        className={`stat-card clickable ${showCanMakeOnly ? 'active' : ''}`}
+                                        onClick={() => setShowCanMakeOnly(v => !v)}
+                                    >
+                                        <div className="stat-icon">✨</div>
+                                        <div className="stat-info">
+                                            <span className="stat-value">{canMakeCount}</span>
+                                            <span className="stat-label">Can Make Now</span>
+                                        </div>
+                                        {loadingPantryMatch && <span className="loading-dot">...</span>}
+                                    </div>
+                                    <div className="stat-card">
+                                        <div className="stat-icon">📊</div>
+                                        <div className="stat-info">
+                                            <span className="stat-value mini-stats">
+                                                <span className="difficulty-easy">{difficultyCounts.easy} easy</span>
+                                                <span className="difficulty-medium">{difficultyCounts.medium} med</span>
+                                                <span className="difficulty-hard">{difficultyCounts.hard} hard</span>
+                                            </span>
+                                            <span className="stat-label">By Difficulty</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Filters */}
+                                <div className="favorites-filters">
+                                    <div className="search-box">
+                                        <span className="search-icon">🔍</span>
+                                        <input
+                                            type="text"
+                                            placeholder="Search favorites..."
+                                            value={favSearch}
+                                            onChange={(e) => setFavSearch(e.target.value)}
+                                            className="search-input"
+                                        />
+                                        {favSearch && (
+                                            <button className="clear-search" onClick={() => setFavSearch('')}>×</button>
+                                        )}
+                                    </div>
+                                    <div className="filter-group">
+                                        <select value={favDifficulty}
+                                            onChange={(e) => setFavDifficulty(e.target.value)}
+                                            className="filter-select">
+                                            <option value="all">All Difficulties</option>
+                                            <option value="easy">Easy ({difficultyCounts.easy})</option>
+                                            <option value="medium">Medium ({difficultyCounts.medium})</option>
+                                            <option value="hard">Hard ({difficultyCounts.hard})</option>
+                                        </select>
+                                    </div>
+                                    <div className="filter-group">
+                                        <select value={favSortBy}
+                                            onChange={(e) => setFavSortBy(e.target.value)}
+                                            className="filter-select">
+                                            <option value="saved_at">Recently Saved</option>
+                                            <option value="title">Title (A-Z)</option>
+                                            <option value="difficulty">Difficulty</option>
+                                            <option value="time">Cooking Time</option>
+                                            <option value="match">Pantry Match</option>
+                                        </select>
+                                    </div>
+                                    <button
+                                        className={`filter-btn-toggle ${showCanMakeOnly ? 'active' : ''}`}
+                                        onClick={() => setShowCanMakeOnly(v => !v)}
+                                    >
+                                        ✨ Can Make Now
+                                    </button>
+                                    {hasFavFilters && (
+                                        <button className="btn btn-outline btn-small"
+                                            onClick={() => { setFavSearch(''); setFavDifficulty('all'); setShowCanMakeOnly(false); }}>
+                                            Clear Filters
+                                        </button>
+                                    )}
+                                    <button
+                                        className="btn btn-outline btn-small btn-danger-outline"
+                                        onClick={() => setShowClearModal(true)}
+                                    >
+                                        🗑️ Clear All
+                                    </button>
+                                </div>
+
+                                <div className="results-info">
+                                    <p>Showing {filteredFavorites.length} of {favorites.length} favorites</p>
+                                </div>
+
+                                {filteredFavorites.length > 0 ? (
+                                    <div className={`favorites-grid ${viewMode}`}>
+                                        {filteredFavorites.map(favorite => (
+                                            <FavoriteCard
+                                                key={favorite.id}
+                                                favorite={favorite}
+                                                onRemove={handleRemoveFavorite}
+                                                pantryMatch={pantryMatchData[favorite.recipe?.id]}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="no-results-box">
+                                        <p>No favorites match your filters.</p>
+                                        <button className="btn btn-outline btn-small"
+                                            onClick={() => { setFavSearch(''); setFavDifficulty('all'); setShowCanMakeOnly(false); }}>
+                                            Clear Filters
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </>
+                )}
             </div>
 
             {showCreateModal && (
@@ -370,6 +650,17 @@ const Recipes = () => {
                     onClose={() => setShowCreateModal(false)}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={showClearModal}
+                title="Clear All Favorites"
+                message={`Are you sure you want to remove all ${favorites.length} favorites? This cannot be undone.`}
+                confirmText={clearLoading ? 'Clearing...' : 'Clear All'}
+                cancelText="Cancel"
+                onConfirm={handleClearFavorites}
+                onCancel={() => setShowClearModal(false)}
+                danger
+            />
         </div>
     );
 };
