@@ -6510,3 +6510,119 @@ textarea.form-control {
         align-items: flex-start;
     }
 }
+
+/* ── Shopping cart two-column layout ── */
+.cart-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.cart-section {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.25rem;
+}
+
+.cart-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.cart-section-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.cart-section-count {
+    background: var(--primary-color);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+}
+
+.cart-section-hint {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.cart-section-footer {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.cart-empty-msg {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding: 0.5rem 0;
+}
+
+.cart-empty-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* Manual item add form */
+.cart-add-form {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.cart-add-name {
+    flex: 2;
+    min-width: 0;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.cart-add-note {
+    flex: 1;
+    min-width: 0;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* Manual item done state */
+.cart-item-done .cart-item-name {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+
+.cart-remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.2rem 0.35rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.cart-remove-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+@media (max-width: 700px) {
+    .cart-two-col {
+        grid-template-columns: 1fr;
+    }
+}

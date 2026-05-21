@@ -106,3 +106,9 @@ from .fridge_views import (
     cook_recipe,
     consume_from_fridge,
 )
+
+from .cart_views import (
+    cart_item_list,
+    cart_item_detail,
+    cart_clear_checked,
+)

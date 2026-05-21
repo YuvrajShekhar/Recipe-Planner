@@ -223,4 +223,14 @@ export const activityAPI = {
     getDailySummary: (date) => API.get('/fitness/activities/daily/', { params: { date } }),
 };
 
+// ==================== SHOPPING CART (manual items) APIs ====================
+
+export const cartAPI = {
+    getAll: () => API.get('/cart/'),
+    add: (name, note) => API.post('/cart/', { name, note }),
+    toggle: (id, is_checked) => API.patch(`/cart/${id}/`, { is_checked }),
+    remove: (id) => API.delete(`/cart/${id}/`),
+    clearChecked: () => API.delete('/cart/clear-checked/'),
+};
+
 export default API;

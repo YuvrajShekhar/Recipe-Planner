@@ -4,6 +4,7 @@ from .models import (
     Ingredient, Recipe, RecipeIngredient, Pantry, Favorite,
     IngredientNutrition, DailyNutritionLog, FitnessLog,
     UserProfile, ActivityLog, FridgeItem, FoodItem, FoodPantry,
+    ShoppingCartItem,
 )
 
 
@@ -370,3 +371,9 @@ class FoodPantrySerializer(serializers.ModelSerializer):
         model = FoodPantry
         fields = ['id', 'food_item', 'quantity', 'added_at', 'updated_at']
         read_only_fields = ['id', 'added_at', 'updated_at']
+
+class ShoppingCartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShoppingCartItem
+        fields = ['id', 'name', 'note', 'is_checked', 'created_at']
+        read_only_fields = ['id', 'created_at']

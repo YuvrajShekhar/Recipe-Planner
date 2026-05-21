@@ -101,4 +101,9 @@ urlpatterns = [
     path('fitness/monthly-summary/', views.fitness_monthly_summary, name='fitness-monthly-summary'),
     path('fitness/fitbit/setup/', views.setup_fitbit, name='fitbit-setup'),
     path('fitness/sync/', views.sync_fitbit_steps, name='fitbit-sync'),
+
+    # Shopping cart (manual items)
+    path('cart/', views.cart_item_list, name='cart-list'),
+    path('cart/clear-checked/', views.cart_clear_checked, name='cart-clear-checked'),
+    path('cart/<int:pk>/', views.cart_item_detail, name='cart-item-detail'),
 ]

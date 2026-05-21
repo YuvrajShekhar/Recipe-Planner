@@ -408,6 +408,22 @@ class UserProfile(models.Model):
         return 447.593 + (9.247 * w) + (3.098 * h) - (4.330 * a)
 
 
+class ShoppingCartItem(models.Model):
+    """Manually added items in the user's shopping cart — not linked to pantry/ingredients."""
+
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_items')
+    name       = models.CharField(max_length=200)
+    note       = models.CharField(max_length=200, blank=True, help_text="Optional detail, e.g. '2 packs'")
+    is_checked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['is_checked', '-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} — {self.name}"
+
+
 # MET values (Compendium of Physical Activities)
 MET_VALUES = {
     'bouldering':               7.5,

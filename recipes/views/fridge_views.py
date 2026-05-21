@@ -173,7 +173,12 @@ def cook_recipe(request):
         deduct = min(pantry_item.quantity, needed)
         new_qty = pantry_item.quantity - deduct
         if new_qty <= 0:
-            pantry_item.delete()
+            if pantry_item.low_stock_threshold is not None:
+                # Keep the item visible (and in the cart) rather than deleting it
+                pantry_item.quantity = Decimal('0')
+                pantry_item.save(update_fields=['quantity'])
+            else:
+                pantry_item.delete()
         else:
             pantry_item.quantity = new_qty
             pantry_item.save(update_fields=['quantity'])
