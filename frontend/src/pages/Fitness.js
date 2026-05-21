@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fitnessAPI, healthAPI, activityAPI, authAPI } from '../services/api';
 import MonthCalendar from '../components/health/MonthCalendar';
 import StepsPanel from '../components/fitness/StepsPanel';
@@ -37,6 +37,7 @@ const Fitness = () => {
   const [fitbitConnected, setFitbitConnected] = useState(null);
   const [userProfile, setUserProfile] = useState(null);      // { age, height_cm, weight_kg, gender }
   const [activities, setActivities] = useState([]);          // ActivityLog entries for selectedDate
+  const [weightByDate, setWeightByDate] = useState({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savingActivity, setSavingActivity] = useState(false);
@@ -97,12 +98,43 @@ const Fitness = () => {
     }
   }, []);
 
+  const fetchWeightHistory = useCallback(async () => {
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+    const months = [{ month: today.getMonth() + 1, year: today.getFullYear() }];
+    if (
+      sevenDaysAgo.getMonth() !== today.getMonth() ||
+      sevenDaysAgo.getFullYear() !== today.getFullYear()
+    ) {
+      months.push({ month: sevenDaysAgo.getMonth() + 1, year: sevenDaysAgo.getFullYear() });
+    }
+
+    try {
+      const results = await Promise.all(
+        months.map(({ month, year }) => fitnessAPI.getMonthlySummary(month, year))
+      );
+      const byDate = {};
+      results.forEach(res => {
+        (res.data.logs || []).forEach(log => {
+          if (log.weight_kg != null) byDate[log.date] = parseFloat(log.weight_kg);
+        });
+      });
+      setWeightByDate(byDate);
+    } catch {
+      // non-critical
+    }
+  }, []);
+
   // Fetch profile once on mount
   useEffect(() => {
     authAPI.getProfile().then(res => {
       setUserProfile(res.data?.user?.profile ?? null);
     }).catch(() => {});
   }, []);
+
+  useEffect(() => { fetchWeightHistory(); }, [fetchWeightHistory]);
 
   useEffect(() => {
     fetchDaily(selectedDate);
@@ -128,8 +160,8 @@ const Fitness = () => {
         weight_kg: weightKg,
       });
       setDailyLog(prev => ({ ...res.data, source: 'manual', fitbit_connected: prev?.fitbit_connected }));
-      // Refresh calendar dots
       await fetchMonthly(selectedDate);
+      await fetchWeightHistory();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save steps');
     } finally {
@@ -224,6 +256,19 @@ const Fitness = () => {
   const netBalance   = caloriesConsumed - totalBurnt;
   const source       = dailyLog?.source ?? 'manual';
   const weightKg     = dailyLog?.weight_kg != null ? parseFloat(dailyLog.weight_kg) : null;
+
+  const sevenDayAvgWeight = useMemo(() => {
+    const today = new Date();
+    const weights = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = toLocalDate(d);
+      if (weightByDate[key] != null) weights.push(weightByDate[key]);
+    }
+    if (weights.length === 0) return null;
+    return weights.reduce((a, b) => a + b, 0) / weights.length;
+  }, [weightByDate]);
 
   return (
     <div className="fitness-page">
@@ -431,6 +476,14 @@ const Fitness = () => {
               ) : (
                 <p className="weight-display-empty">No weight logged for this day</p>
               )}
+              <div className="weight-avg-row">
+                <span className="weight-avg-label">7-day average</span>
+                <span className="weight-avg-val">
+                  {sevenDayAvgWeight != null
+                    ? `${sevenDayAvgWeight.toFixed(2).replace(/\.?0+$/, '')} kg`
+                    : '—'}
+                </span>
+              </div>
             </div>
 
             {/* Activities card */}
