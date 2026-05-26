@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('recipes.urls')),
     path('og/recipe/<int:recipe_id>/', og_views.recipe_og_redirect, name='recipe-og'),
+    path('og/recipe-image/<int:recipe_id>/', og_views.recipe_image, name='recipe-og-image'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
