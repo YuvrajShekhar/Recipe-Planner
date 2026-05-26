@@ -8,13 +8,35 @@ import json
 
 import requests as http_requests
 
-from ..models import FitnessLog, FitbitCredentials
+from ..models import FitnessLog, FitbitCredentials, UserProfile
 from ..serializers import FitnessLogSerializer
 
 # Fitbit OAuth 2.0 credentials
 FITBIT_CLIENT_ID     = '23VD8D'
 FITBIT_CLIENT_SECRET = '52f20fdaaff852df3839f4f0500ac969'
 FITBIT_API_BASE      = 'https://api.fitbit.com'
+
+
+# ── Profile weight sync ──────────────────────────────────────────────────────
+
+def _update_profile_weight(user):
+    from datetime import timedelta
+    from decimal import Decimal
+    today = date.today()
+    seven_days_ago = today - timedelta(days=6)
+    logs = FitnessLog.objects.filter(
+        user=user,
+        date__gte=seven_days_ago,
+        date__lte=today,
+        weight_kg__isnull=False,
+    )
+    weights = [float(l.weight_kg) for l in logs]
+    if not weights:
+        return
+    avg = sum(weights) / len(weights)
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    profile.weight_kg = Decimal(str(round(avg, 2)))
+    profile.save(update_fields=['weight_kg'])
 
 
 # ── Fitbit token helper ───────────────────────────────────────────────────────
@@ -153,6 +175,9 @@ def fitness_log_list(request):
             defaults={'steps': steps, 'notes': notes, 'weight_kg': weight_kg}
         )
 
+        if weight_kg is not None:
+            _update_profile_weight(request.user)
+
         serializer = FitnessLogSerializer(log)
         response_status = status.HTTP_201_CREATED if created else status.HTTP_200_OK
         return Response(serializer.data, status=response_status)
@@ -180,7 +205,10 @@ def fitness_log_detail(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
+        had_weight = log.weight_kg is not None
         log.delete()
+        if had_weight:
+            _update_profile_weight(request.user)
         return Response({'message': 'Fitness log deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 

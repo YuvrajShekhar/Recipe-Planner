@@ -7,7 +7,8 @@ const ShareRecipeModal = ({ recipe, isOwner, onClose, onVisibilityChange }) => {
   const [linkCopied, setLinkCopied]   = useState(false);
   const [textCopied, setTextCopied]   = useState(false);
 
-  const shareUrl = `${window.location.origin}/recipes/${recipe.id}`;
+  const apiBase = (process.env.REACT_APP_API_URL || 'https://recipe-planner-production.up.railway.app/api').replace(/\/api\/?$/, '');
+  const shareUrl = `${apiBase}/og/recipe/${recipe.id}/`;
 
   // ── Toggle public/private ───────────────────────────────────────────────────
   const handleTogglePublic = async () => {
