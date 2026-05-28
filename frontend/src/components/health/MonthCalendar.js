@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/Health.css';
 
-const MonthCalendar = ({ selectedDate, onDateSelect, logsData }) => {
+const MonthCalendar = ({ selectedDate, onDateSelect, logsData, onAnalyticsClick }) => {
   const today = new Date();
   const currentYear = selectedDate.getFullYear();
   const currentMonth = selectedDate.getMonth();
@@ -81,7 +81,18 @@ const MonthCalendar = ({ selectedDate, onDateSelect, logsData }) => {
           &#8249;
         </button>
         <div className="calendar-title">
-          <h3>{monthNames[currentMonth]} {currentYear}</h3>
+          <div className="calendar-month-row">
+            <h3>{monthNames[currentMonth]} {currentYear}</h3>
+            {onAnalyticsClick && (
+              <button
+                className="analytics-icon-btn"
+                onClick={() => onAnalyticsClick(currentMonth + 1, currentYear)}
+                title="Monthly Analysis"
+              >
+                📊
+              </button>
+            )}
+          </div>
           <button onClick={goToToday} className="today-button">
             Today
           </button>

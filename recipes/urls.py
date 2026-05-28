@@ -110,4 +110,7 @@ urlpatterns = [
 
     # Water tracking
     path('water/', views.water_log, name='water-log'),
+
+    # Analytics
+    path('analytics/monthly/', views.monthly_analytics, name='monthly-analytics'),
 ]

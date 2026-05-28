@@ -243,4 +243,10 @@ export const waterAPI = {
     reset: (date) => API.delete('/water/', { params: { date } }),
 };
 
+// ==================== ANALYTICS APIs ====================
+
+export const analyticsAPI = {
+    getMonthly: (month, year) => API.get('/analytics/monthly/', { params: { month, year } }),
+};
+
 export default API;

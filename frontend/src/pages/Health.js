@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { healthAPI } from '../services/api';
 import MonthCalendar from '../components/health/MonthCalendar';
 import WaterTracker from '../components/health/WaterTracker';
+import MonthlyAnalyticsModal from '../components/health/MonthlyAnalyticsModal';
 import DailySummary from '../components/health/DailySummary';
 import FoodEntryForm from '../components/health/FoodEntryForm';
 import AddFoodChoiceModal from '../components/health/AddFoodChoiceModal';
@@ -20,6 +21,7 @@ const Health = () => {
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [analyticsModal, setAnalyticsModal] = useState(null); // { month, year }
 
   // Format date to YYYY-MM-DD using local time (not UTC)
   const formatDate = (date) => {
@@ -158,6 +160,7 @@ const Health = () => {
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
               logsData={monthlyData}
+              onAnalyticsClick={(month, year) => setAnalyticsModal({ month, year })}
             />
 
             <div className="action-buttons">
@@ -255,6 +258,14 @@ const Health = () => {
           </div>
         </div>
       </div>
+
+      {analyticsModal && (
+        <MonthlyAnalyticsModal
+          month={analyticsModal.month}
+          year={analyticsModal.year}
+          onClose={() => setAnalyticsModal(null)}
+        />
+      )}
     </div>
   );
 };

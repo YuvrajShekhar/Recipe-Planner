@@ -115,3 +115,5 @@ from .cart_views import (
 )
 
 from .water_views import water_log
+
+from .analytics_views import monthly_analytics
