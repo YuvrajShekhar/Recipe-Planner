@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fitnessAPI, healthAPI, activityAPI, authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import MonthCalendar from '../components/health/MonthCalendar';
 import StepsPanel from '../components/fitness/StepsPanel';
 import ActivityPanel from '../components/fitness/ActivityPanel';
@@ -30,6 +31,7 @@ const calcBMR = (profile) => {
 };
 
 const Fitness = () => {
+  const { checkAuth } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dailyLog, setDailyLog] = useState(null);            // { id, date, steps, notes, source } | null
   const [monthlyData, setMonthlyData] = useState({});        // { 'YYYY-MM-DD': steps }
@@ -162,6 +164,7 @@ const Fitness = () => {
       setDailyLog(prev => ({ ...res.data, source: 'manual', fitbit_connected: prev?.fitbit_connected }));
       await fetchMonthly(selectedDate);
       await fetchWeightHistory();
+      if (weightKg != null) await checkAuth();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save steps');
     } finally {
@@ -174,9 +177,11 @@ const Fitness = () => {
     if (!window.confirm('Remove steps entry for this day?')) return;
     try {
       setSaving(true);
+      const hadWeight = dailyLog.weight_kg != null;
       await fitnessAPI.deleteLog(dailyLog.id);
       setDailyLog({ id: null, date: toLocalDate(selectedDate), steps: 0, notes: '', source: 'manual' });
       await fetchMonthly(selectedDate);
+      if (hadWeight) await checkAuth();
     } catch {
       setError('Failed to delete entry');
     } finally {

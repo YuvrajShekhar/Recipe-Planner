@@ -85,6 +85,8 @@ export const pantryAPI = {
     check: (ingredientId) => API.get(`/pantry/check/${ingredientId}/`),
     getIngredientIds: () => API.get('/pantry/ingredient-ids/'),
     getLowStock: () => API.get('/pantry/low-stock/'),
+    checkRecipe: (recipeId, servings) =>
+        API.get('/pantry/check-recipe/', { params: { recipe_id: recipeId, servings } }),
 };
 
 // ==================== FAVORITES APIs ====================
@@ -231,6 +233,14 @@ export const cartAPI = {
     toggle: (id, is_checked) => API.patch(`/cart/${id}/`, { is_checked }),
     remove: (id) => API.delete(`/cart/${id}/`),
     clearChecked: () => API.delete('/cart/clear-checked/'),
+};
+
+// ==================== WATER TRACKING APIs ====================
+
+export const waterAPI = {
+    get: (date) => API.get('/water/', { params: { date } }),
+    add: (date, add_ml) => API.post('/water/', { date, add_ml }),
+    reset: (date) => API.delete('/water/', { params: { date } }),
 };
 
 export default API;

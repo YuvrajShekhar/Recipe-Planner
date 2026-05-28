@@ -424,6 +424,21 @@ class ShoppingCartItem(models.Model):
         return f"{self.user.username} — {self.name}"
 
 
+class WaterLog(models.Model):
+    """Tracks daily water intake in ml — one record per user per date."""
+
+    user      = models.ForeignKey(User, on_delete=models.CASCADE, related_name='water_logs')
+    date      = models.DateField()
+    amount_ml = models.PositiveIntegerField(default=0, help_text="Total water consumed in ml today")
+
+    class Meta:
+        unique_together = ['user', 'date']
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.user.username} — {self.amount_ml} ml on {self.date}"
+
+
 # MET values (Compendium of Physical Activities)
 MET_VALUES = {
     'bouldering':               7.5,

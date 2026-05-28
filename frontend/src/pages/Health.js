@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { healthAPI } from '../services/api';
 import MonthCalendar from '../components/health/MonthCalendar';
+import WaterTracker from '../components/health/WaterTracker';
 import DailySummary from '../components/health/DailySummary';
 import FoodEntryForm from '../components/health/FoodEntryForm';
 import AddFoodChoiceModal from '../components/health/AddFoodChoiceModal';
@@ -177,6 +178,8 @@ const Health = () => {
                 </button>
               )}
             </div>
+
+            <WaterTracker selectedDate={selectedDate} formatDate={formatDate} />
 
             {addMode === 'manual' && (
               <FoodEntryForm

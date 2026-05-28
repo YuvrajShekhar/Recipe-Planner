@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import F, Q
-from ..models import Pantry, Ingredient
+from ..models import Pantry, Ingredient, Recipe
 from ..serializers import PantrySerializer, IngredientSerializer
 
 
@@ -376,3 +376,85 @@ def pantry_low_stock(request):
         'count': items.count(),
         'pantry_items': serializer.data,
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def pantry_check_recipe(request):
+    """
+    Check how much of a recipe's ingredients the user already has in their pantry.
+
+    GET /api/pantry/check-recipe/?recipe_id=<id>&servings=<n>
+
+    Returns each ingredient with: required quantity (scaled), available, missing.
+    """
+    recipe_id = request.query_params.get('recipe_id')
+    servings_raw = request.query_params.get('servings', None)
+
+    if not recipe_id:
+        return Response({'error': 'recipe_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        recipe = Recipe.objects.prefetch_related(
+            'recipe_ingredients__ingredient'
+        ).get(pk=recipe_id)
+    except Recipe.DoesNotExist:
+        return Response({'error': 'Recipe not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        desired_servings = float(servings_raw) if servings_raw else float(recipe.servings or 1)
+        if desired_servings <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        return Response({'error': 'servings must be a positive number'}, status=status.HTTP_400_BAD_REQUEST)
+
+    recipe_servings = float(recipe.servings or 1)
+    scale = desired_servings / recipe_servings
+
+    # Build pantry lookup: ingredient_id → quantity
+    pantry_items = Pantry.objects.filter(user=request.user).select_related('ingredient')
+    pantry_map = {p.ingredient_id: float(p.quantity or 0) for p in pantry_items}
+
+    ingredients = []
+    missing_count = 0
+
+    for ri in recipe.recipe_ingredients.all():
+        required = round(float(ri.quantity or 0) * scale, 3)
+        available = pantry_map.get(ri.ingredient_id, 0)
+        missing = round(max(0.0, required - available), 3)
+        sufficient = missing == 0
+
+        if not sufficient:
+            missing_count += 1
+
+        # Format numbers: drop trailing zeros
+        def fmt(n):
+            s = f'{n:.3f}'.rstrip('0').rstrip('.')
+            return s if s else '0'
+
+        ingredients.append({
+            'ingredient_id': ri.ingredient_id,
+            'name': ri.ingredient.name,
+            'unit': ri.unit or ri.ingredient.unit or '',
+            'required': fmt(required),
+            'available': fmt(available),
+            'missing': fmt(missing),
+            'sufficient': sufficient,
+            'in_pantry': ri.ingredient_id in pantry_map,
+        })
+
+    # Sort: missing items first, then sufficient
+    ingredients.sort(key=lambda x: (x['sufficient'], x['name']))
+
+    return Response({
+        'recipe': {
+            'id': recipe.id,
+            'title': recipe.title,
+            'servings': recipe.servings,
+        },
+        'desired_servings': desired_servings,
+        'ingredients': ingredients,
+        'total_ingredients': len(ingredients),
+        'missing_count': missing_count,
+        'all_sufficient': missing_count == 0,
+    })

@@ -42,6 +42,7 @@ urlpatterns = [
     path('pantry/add-multiple/', views.pantry_add_multiple, name='pantry-add-multiple'),
     path('pantry/clear/', views.pantry_clear, name='pantry-clear'),
     path('pantry/low-stock/', views.pantry_low_stock, name='pantry-low-stock'),
+    path('pantry/check-recipe/', views.pantry_check_recipe, name='pantry-check-recipe'),
     path('pantry/ingredient-ids/', views.pantry_ingredient_ids, name='pantry-ingredient-ids'),
     path('pantry/check/<int:ingredient_id>/', views.pantry_check_ingredient, name='pantry-check'),
     path('pantry/<int:pk>/', views.pantry_detail, name='pantry-detail'),
@@ -106,4 +107,7 @@ urlpatterns = [
     path('cart/', views.cart_item_list, name='cart-list'),
     path('cart/clear-checked/', views.cart_clear_checked, name='cart-clear-checked'),
     path('cart/<int:pk>/', views.cart_item_detail, name='cart-item-detail'),
+
+    # Water tracking
+    path('water/', views.water_log, name='water-log'),
 ]

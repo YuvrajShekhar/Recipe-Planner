@@ -42,6 +42,7 @@ from .pantry_views import (
     pantry_check_ingredient,
     pantry_ingredient_ids,
     pantry_low_stock,
+    pantry_check_recipe,
 )
 
 from .favorite_views import (
@@ -112,3 +113,5 @@ from .cart_views import (
     cart_item_detail,
     cart_clear_checked,
 )
+
+from .water_views import water_log

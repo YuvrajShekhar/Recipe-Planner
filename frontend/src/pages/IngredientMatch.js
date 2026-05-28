@@ -1,38 +1,228 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { matchingAPI, pantryAPI } from '../services/api';
+import { matchingAPI, pantryAPI, recipeAPI } from '../services/api';
 import { IngredientSelector } from '../components/ingredients';
 import { MatchResultCard } from '../components/recipes';
 import { Loading, Alert, PageHeader, EmptyState } from '../components/common';
 import { useDocumentTitle } from '../hooks';
 
+// ── Recipe Check Tab ─────────────────────────────────────────────────────────
+
+const RecipeCheckTab = () => {
+    const [query, setQuery] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [selectedRecipe, setSelectedRecipe] = useState(null);
+    const [servings, setServings] = useState('');
+    const [checking, setChecking] = useState(false);
+    const [result, setResult] = useState(null);
+    const [error, setError] = useState('');
+    const searchRef = useRef(null);
+    const debounceRef = useRef(null);
+
+    const searchRecipes = useCallback(async (q) => {
+        if (!q.trim()) { setSuggestions([]); return; }
+        try {
+            const res = await recipeAPI.search(q);
+            setSuggestions(res.data.recipes || []);
+            setShowDropdown(true);
+        } catch {
+            setSuggestions([]);
+        }
+    }, []);
+
+    const handleQueryChange = (e) => {
+        const val = e.target.value;
+        setQuery(val);
+        setSelectedRecipe(null);
+        setResult(null);
+        clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => searchRecipes(val), 300);
+    };
+
+    const handleSelect = (recipe) => {
+        setSelectedRecipe(recipe);
+        setQuery(recipe.title);
+        setServings(String(recipe.servings || 1));
+        setSuggestions([]);
+        setShowDropdown(false);
+        setResult(null);
+    };
+
+    const handleCheck = async () => {
+        if (!selectedRecipe) return;
+        const s = parseFloat(servings);
+        if (!s || s <= 0) { setError('Enter a valid number of servings'); return; }
+        setChecking(true);
+        setError('');
+        try {
+            const res = await pantryAPI.checkRecipe(selectedRecipe.id, s);
+            setResult(res.data);
+        } catch {
+            setError('Failed to check pantry. Please try again.');
+        } finally {
+            setChecking(false);
+        }
+    };
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handler = (e) => {
+            if (searchRef.current && !searchRef.current.contains(e.target)) {
+                setShowDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const fmtNum = (n) => {
+        const f = parseFloat(n);
+        if (isNaN(f)) return n;
+        return Number.isInteger(f) ? String(f) : f.toFixed(2).replace(/\.?0+$/, '');
+    };
+
+    return (
+        <div className="recipe-check-panel">
+            {error && <Alert type="error" message={error} onClose={() => setError('')} />}
+
+            {/* Recipe search */}
+            <div className="recipe-check-search" ref={searchRef}>
+                <label className="recipe-check-label">Search for a recipe</label>
+                <div className="recipe-search-wrap">
+                    <input
+                        className="recipe-check-input"
+                        type="text"
+                        placeholder="Type a recipe name..."
+                        value={query}
+                        onChange={handleQueryChange}
+                        onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
+                    />
+                    {showDropdown && suggestions.length > 0 && (
+                        <div className="recipe-check-dropdown">
+                            {suggestions.map(r => (
+                                <div
+                                    key={r.id}
+                                    className="recipe-check-option"
+                                    onMouseDown={() => handleSelect(r)}
+                                >
+                                    <span className="recipe-check-option-title">{r.title}</span>
+                                    <span className="recipe-check-option-meta">
+                                        {r.servings} servings · {r.difficulty}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Servings input */}
+            {selectedRecipe && (
+                <div className="recipe-check-servings">
+                    <label className="recipe-check-label">
+                        How many servings do you want to cook?
+                        <span className="recipe-check-label-hint">
+                            (recipe makes {selectedRecipe.servings})
+                        </span>
+                    </label>
+                    <div className="recipe-check-servings-row">
+                        <input
+                            className="recipe-check-servings-input"
+                            type="number"
+                            min="0.1"
+                            max="100"
+                            step="0.5"
+                            value={servings}
+                            onChange={e => setServings(e.target.value)}
+                        />
+                        <span className="recipe-check-unit">servings</span>
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleCheck}
+                            disabled={checking || !servings}
+                        >
+                            {checking ? 'Checking...' : 'Check Pantry'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Results */}
+            {result && (
+                <div className="recipe-check-results">
+                    <div className="recipe-check-results-header">
+                        <h3>{result.recipe.title}</h3>
+                        <span className="recipe-check-servings-badge">
+                            {fmtNum(result.desired_servings)} serving{result.desired_servings !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+
+                    {result.all_sufficient ? (
+                        <div className="recipe-check-all-good">
+                            You have everything you need!
+                        </div>
+                    ) : (
+                        <div className="recipe-check-summary-banner">
+                            <span className="missing-count">{result.missing_count}</span> ingredient{result.missing_count !== 1 ? 's' : ''} missing from your pantry
+                        </div>
+                    )}
+
+                    <div className="recipe-check-table">
+                        <div className="rct-header">
+                            <span>Ingredient</span>
+                            <span>Need</span>
+                            <span>Have</span>
+                            <span>Missing</span>
+                        </div>
+                        {result.ingredients.map((ing, i) => (
+                            <div
+                                key={i}
+                                className={`rct-row ${ing.sufficient ? 'rct-row-ok' : 'rct-row-missing'}`}
+                            >
+                                <span className="rct-name">
+                                    {!ing.sufficient && <span className="rct-dot-missing" />}
+                                    {ing.sufficient && <span className="rct-dot-ok" />}
+                                    {ing.name}
+                                </span>
+                                <span className="rct-cell">{fmtNum(ing.required)} {ing.unit}</span>
+                                <span className="rct-cell rct-have">
+                                    {ing.in_pantry ? `${fmtNum(ing.available)} ${ing.unit}` : '—'}
+                                </span>
+                                <span className={`rct-cell ${ing.sufficient ? 'rct-ok' : 'rct-red'}`}>
+                                    {ing.sufficient ? '✓' : `${fmtNum(ing.missing)} ${ing.unit}`}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ── Main IngredientMatch page ─────────────────────────────────────────────────
+
 const IngredientMatch = () => {
     useDocumentTitle('Find Recipes by Ingredients');
     const { isAuthenticated } = useAuth();
 
-    // Selected ingredients state
     const [selectedIngredients, setSelectedIngredients] = useState([]);
-    
-    // Results state
     const [matchResults, setMatchResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [hasSearched, setHasSearched] = useState(false);
 
-    // Filter options
     const [minMatch, setMinMatch] = useState(0);
     const [difficulty, setDifficulty] = useState('');
     const [maxMissing, setMaxMissing] = useState('');
-    
-    // Tabs
-    const [activeTab, setActiveTab] = useState('select'); // 'select' or 'pantry'
-    
-    // Pantry loading
+
+    const [activeTab, setActiveTab] = useState('select'); // 'select' | 'pantry' | 'check'
+
     const [pantryLoading, setPantryLoading] = useState(false);
     const [pantryIngredients, setPantryIngredients] = useState([]);
 
-    // Load pantry ingredients when switching to pantry tab
     useEffect(() => {
         if (activeTab === 'pantry' && isAuthenticated) {
             loadPantryIngredients();
@@ -45,8 +235,7 @@ const IngredientMatch = () => {
             const response = await pantryAPI.getAll();
             const pantryItems = response.data.pantry_items || [];
             setPantryIngredients(pantryItems.map(item => item.ingredient));
-        } catch (err) {
-            console.error('Error loading pantry:', err);
+        } catch {
             setError('Failed to load pantry ingredients');
         } finally {
             setPantryLoading(false);
@@ -55,11 +244,7 @@ const IngredientMatch = () => {
 
     const handleFindRecipes = async () => {
         const ingredientsToUse = activeTab === 'pantry' ? pantryIngredients : selectedIngredients;
-        
-        if (ingredientsToUse.length === 0) {
-            setError('Please select at least one ingredient');
-            return;
-        }
+        if (ingredientsToUse.length === 0) { setError('Please select at least one ingredient'); return; }
 
         setLoading(true);
         setError('');
@@ -67,25 +252,18 @@ const IngredientMatch = () => {
 
         try {
             const ingredientIds = ingredientsToUse.map(ing => ing.id);
-            
             const params = {};
             if (minMatch > 0) params.min_match = minMatch;
             if (difficulty) params.difficulty = difficulty;
 
             let response;
-            
             if (maxMissing) {
-                // Use "almost" endpoint for recipes missing few ingredients
                 response = await matchingAPI.findAlmost(ingredientIds, parseInt(maxMissing), params);
-                setMatchResults(response.data.matched_recipes || []);
             } else {
-                // Use regular matching endpoint
                 response = await matchingAPI.matchByIngredients(ingredientIds, params);
-                setMatchResults(response.data.matched_recipes || []);
             }
-
-        } catch (err) {
-            console.error('Error finding recipes:', err);
+            setMatchResults(response.data.matched_recipes || []);
+        } catch {
             setError('Failed to find matching recipes. Please try again.');
         } finally {
             setLoading(false);
@@ -94,7 +272,6 @@ const IngredientMatch = () => {
 
     const handleMatchFromPantry = async () => {
         if (!isAuthenticated) return;
-
         setLoading(true);
         setError('');
         setHasSearched(true);
@@ -103,12 +280,9 @@ const IngredientMatch = () => {
             const params = {};
             if (minMatch > 0) params.min_match = minMatch;
             if (difficulty) params.difficulty = difficulty;
-
             const response = await matchingAPI.matchFromPantry(params);
             setMatchResults(response.data.matched_recipes || []);
-
-        } catch (err) {
-            console.error('Error matching from pantry:', err);
+        } catch {
             setError('Failed to find matching recipes. Please try again.');
         } finally {
             setLoading(false);
@@ -116,243 +290,227 @@ const IngredientMatch = () => {
     };
 
     const handleFavoriteToggle = (recipeId, isFavorited) => {
-        setMatchResults(prev => 
+        setMatchResults(prev =>
             prev.map(r => r.id === recipeId ? { ...r, is_favorited: isFavorited } : r)
         );
     };
 
-    const clearResults = () => {
-        setMatchResults([]);
-        setHasSearched(false);
-    };
+    const clearResults = () => { setMatchResults([]); setHasSearched(false); };
 
     const getResultsSummary = () => {
         if (matchResults.length === 0) return null;
-        
         const perfectMatches = matchResults.filter(r => r.match_percentage === 100).length;
         const highMatches = matchResults.filter(r => r.match_percentage >= 80 && r.match_percentage < 100).length;
-        const mediumMatches = matchResults.filter(r => r.match_percentage >= 50 && r.match_percentage < 80).length;
-        
-        return { perfectMatches, highMatches, mediumMatches };
+        return { perfectMatches, highMatches };
     };
 
     const summary = getResultsSummary();
+    const isMatchTab = activeTab === 'select' || activeTab === 'pantry';
 
     return (
         <div className="ingredient-match-page">
             <div className="container">
-                <PageHeader 
-                    title="Find Recipes by Ingredients" 
+                <PageHeader
+                    title="Find Recipes by Ingredients"
                     subtitle="Select the ingredients you have and discover what you can cook"
                 />
 
                 {/* Tab Selection */}
                 <div className="match-tabs">
-                    <button 
+                    <button
                         className={`match-tab ${activeTab === 'select' ? 'active' : ''}`}
                         onClick={() => { setActiveTab('select'); clearResults(); }}
                     >
-                        🥕 Select Ingredients
+                        Select Ingredients
                     </button>
                     {isAuthenticated ? (
-                        <button 
+                        <button
                             className={`match-tab ${activeTab === 'pantry' ? 'active' : ''}`}
                             onClick={() => { setActiveTab('pantry'); clearResults(); }}
                         >
-                            📦 Use My Pantry
+                            Use My Pantry
                         </button>
                     ) : (
                         <Link to="/login" className="match-tab disabled">
-                            🔒 Login to Use Pantry
+                            Login to Use Pantry
+                        </Link>
+                    )}
+                    {isAuthenticated ? (
+                        <button
+                            className={`match-tab ${activeTab === 'check' ? 'active' : ''}`}
+                            onClick={() => { setActiveTab('check'); clearResults(); }}
+                        >
+                            Check a Recipe
+                        </button>
+                    ) : (
+                        <Link to="/login" className="match-tab disabled">
+                            Login to Check Recipe
                         </Link>
                     )}
                 </div>
 
-                <div className="match-content">
-                    {/* Left Panel - Ingredient Selection */}
-                    <div className="match-sidebar">
-                        {activeTab === 'select' ? (
-                            <IngredientSelector
-                                selectedIngredients={selectedIngredients}
-                                onSelectionChange={setSelectedIngredients}
-                            />
-                        ) : (
-                            <div className="pantry-preview">
-                                <h3>Your Pantry Ingredients</h3>
-                                {pantryLoading ? (
-                                    <Loading message="Loading pantry..." />
-                                ) : pantryIngredients.length > 0 ? (
-                                    <>
-                                        <p className="pantry-count">
-                                            You have <strong>{pantryIngredients.length}</strong> ingredients in your pantry
-                                        </p>
-                                        <div className="pantry-tags">
-                                            {pantryIngredients.map(ing => (
-                                                <span key={ing.id} className="ingredient-tag selected">
-                                                    {ing.name}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        <Link to="/pantry" className="btn btn-outline btn-small mt-20">
-                                            Manage Pantry
-                                        </Link>
-                                    </>
-                                ) : (
-                                    <EmptyState
-                                        icon="📦"
-                                        title="Your pantry is empty"
-                                        message="Add ingredients to your pantry to find matching recipes"
-                                        actionText="Go to Pantry"
-                                        actionLink="/pantry"
-                                    />
+                {/* Check Recipe tab — full-width panel */}
+                {activeTab === 'check' && (
+                    <div className="recipe-check-wrap">
+                        <RecipeCheckTab />
+                    </div>
+                )}
+
+                {/* Select / Pantry tabs — two-column layout */}
+                {isMatchTab && (
+                    <div className="match-content">
+                        {/* Left Panel */}
+                        <div className="match-sidebar">
+                            {activeTab === 'select' ? (
+                                <IngredientSelector
+                                    selectedIngredients={selectedIngredients}
+                                    onSelectionChange={setSelectedIngredients}
+                                />
+                            ) : (
+                                <div className="pantry-preview">
+                                    <h3>Your Pantry Ingredients</h3>
+                                    {pantryLoading ? (
+                                        <Loading message="Loading pantry..." />
+                                    ) : pantryIngredients.length > 0 ? (
+                                        <>
+                                            <p className="pantry-count">
+                                                You have <strong>{pantryIngredients.length}</strong> ingredients in your pantry
+                                            </p>
+                                            <div className="pantry-tags">
+                                                {pantryIngredients.map(ing => (
+                                                    <span key={ing.id} className="ingredient-tag selected">
+                                                        {ing.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <Link to="/pantry" className="btn btn-outline btn-small mt-20">
+                                                Manage Pantry
+                                            </Link>
+                                        </>
+                                    ) : (
+                                        <EmptyState
+                                            icon="📦"
+                                            title="Your pantry is empty"
+                                            message="Add ingredients to your pantry to find matching recipes"
+                                            actionText="Go to Pantry"
+                                            actionLink="/pantry"
+                                        />
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Filters */}
+                            <div className="match-filters">
+                                <h4>Filter Options</h4>
+                                <div className="filter-group">
+                                    <label>Minimum Match %</label>
+                                    <select value={minMatch} onChange={(e) => setMinMatch(parseInt(e.target.value))} className="filter-select">
+                                        <option value="0">Any match</option>
+                                        <option value="25">At least 25%</option>
+                                        <option value="50">At least 50%</option>
+                                        <option value="75">At least 75%</option>
+                                        <option value="100">100% (all ingredients)</option>
+                                    </select>
+                                </div>
+                                <div className="filter-group">
+                                    <label>Difficulty</label>
+                                    <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="filter-select">
+                                        <option value="">Any difficulty</option>
+                                        <option value="easy">Easy</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="hard">Hard</option>
+                                    </select>
+                                </div>
+                                <div className="filter-group">
+                                    <label>Max Missing Ingredients</label>
+                                    <select value={maxMissing} onChange={(e) => setMaxMissing(e.target.value)} className="filter-select">
+                                        <option value="">No limit</option>
+                                        <option value="1">Missing at most 1</option>
+                                        <option value="2">Missing at most 2</option>
+                                        <option value="3">Missing at most 3</option>
+                                        <option value="5">Missing at most 5</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Search Button */}
+                            <div className="match-action">
+                                <button
+                                    className="btn btn-primary btn-large btn-block"
+                                    onClick={activeTab === 'pantry' ? handleMatchFromPantry : handleFindRecipes}
+                                    disabled={loading || (activeTab === 'select' && selectedIngredients.length === 0) || (activeTab === 'pantry' && pantryIngredients.length === 0)}
+                                >
+                                    {loading ? (
+                                        <><span className="spinner-small"></span>Finding Recipes...</>
+                                    ) : (
+                                        <>Find Matching Recipes</>
+                                    )}
+                                </button>
+                                {activeTab === 'select' && selectedIngredients.length > 0 && (
+                                    <p className="selection-info">
+                                        Searching with {selectedIngredients.length} ingredient{selectedIngredients.length !== 1 ? 's' : ''}
+                                    </p>
                                 )}
-                            </div>
-                        )}
-
-                        {/* Filter Options */}
-                        <div className="match-filters">
-                            <h4>Filter Options</h4>
-                            
-                            <div className="filter-group">
-                                <label>Minimum Match %</label>
-                                <select 
-                                    value={minMatch} 
-                                    onChange={(e) => setMinMatch(parseInt(e.target.value))}
-                                    className="filter-select"
-                                >
-                                    <option value="0">Any match</option>
-                                    <option value="25">At least 25%</option>
-                                    <option value="50">At least 50%</option>
-                                    <option value="75">At least 75%</option>
-                                    <option value="100">100% (all ingredients)</option>
-                                </select>
-                            </div>
-
-                            <div className="filter-group">
-                                <label>Difficulty</label>
-                                <select 
-                                    value={difficulty} 
-                                    onChange={(e) => setDifficulty(e.target.value)}
-                                    className="filter-select"
-                                >
-                                    <option value="">Any difficulty</option>
-                                    <option value="easy">Easy</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="hard">Hard</option>
-                                </select>
-                            </div>
-
-                            <div className="filter-group">
-                                <label>Max Missing Ingredients</label>
-                                <select 
-                                    value={maxMissing} 
-                                    onChange={(e) => setMaxMissing(e.target.value)}
-                                    className="filter-select"
-                                >
-                                    <option value="">No limit</option>
-                                    <option value="1">Missing at most 1</option>
-                                    <option value="2">Missing at most 2</option>
-                                    <option value="3">Missing at most 3</option>
-                                    <option value="5">Missing at most 5</option>
-                                </select>
                             </div>
                         </div>
 
-                        {/* Search Button */}
-                        <div className="match-action">
-                            <button
-                                className="btn btn-primary btn-large btn-block"
-                                onClick={activeTab === 'pantry' ? handleMatchFromPantry : handleFindRecipes}
-                                disabled={loading || (activeTab === 'select' && selectedIngredients.length === 0) || (activeTab === 'pantry' && pantryIngredients.length === 0)}
-                            >
-                                {loading ? (
-                                    <>
-                                        <span className="spinner-small"></span>
-                                        Finding Recipes...
-                                    </>
-                                ) : (
-                                    <>
-                                        🔍 Find Matching Recipes
-                                    </>
-                                )}
-                            </button>
-                            
-                            {activeTab === 'select' && selectedIngredients.length > 0 && (
-                                <p className="selection-info">
-                                    Searching with {selectedIngredients.length} ingredient{selectedIngredients.length !== 1 ? 's' : ''}
-                                </p>
+                        {/* Right Panel - Results */}
+                        <div className="match-results">
+                            {error && <Alert type="error" message={error} onClose={() => setError('')} />}
+
+                            {!hasSearched ? (
+                                <div className="results-placeholder">
+                                    <div className="placeholder-icon">🍳</div>
+                                    <h3>Ready to Find Recipes?</h3>
+                                    <p>
+                                        {activeTab === 'select'
+                                            ? 'Select ingredients from the list and click "Find Matching Recipes"'
+                                            : 'Click "Find Matching Recipes" to see what you can make with your pantry ingredients'}
+                                    </p>
+                                </div>
+                            ) : loading ? (
+                                <Loading message="Finding matching recipes..." />
+                            ) : matchResults.length > 0 ? (
+                                <>
+                                    <div className="results-summary">
+                                        <h3>Found {matchResults.length} Recipe{matchResults.length !== 1 ? 's' : ''}</h3>
+                                        {summary && (
+                                            <div className="summary-badges">
+                                                {summary.perfectMatches > 0 && (
+                                                    <span className="summary-badge perfect">
+                                                        {summary.perfectMatches} perfect match{summary.perfectMatches !== 1 ? 'es' : ''}
+                                                    </span>
+                                                )}
+                                                {summary.highMatches > 0 && (
+                                                    <span className="summary-badge high">
+                                                        {summary.highMatches} high match{summary.highMatches !== 1 ? 'es' : ''}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="match-results-grid">
+                                        {matchResults.map(recipe => (
+                                            <MatchResultCard
+                                                key={recipe.id}
+                                                recipe={recipe}
+                                                onFavoriteToggle={handleFavoriteToggle}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <EmptyState
+                                    icon="🔍"
+                                    title="No matching recipes found"
+                                    message="Try selecting different ingredients or adjusting the filters"
+                                    actionText="Clear Filters"
+                                    onAction={() => { setMinMatch(0); setDifficulty(''); setMaxMissing(''); }}
+                                />
                             )}
                         </div>
                     </div>
-
-                    {/* Right Panel - Results */}
-                    <div className="match-results">
-                        {error && (
-                            <Alert type="error" message={error} onClose={() => setError('')} />
-                        )}
-
-                        {!hasSearched ? (
-                            <div className="results-placeholder">
-                                <div className="placeholder-icon">🍳</div>
-                                <h3>Ready to Find Recipes?</h3>
-                                <p>
-                                    {activeTab === 'select' 
-                                        ? 'Select ingredients from the list and click "Find Matching Recipes"'
-                                        : 'Click "Find Matching Recipes" to see what you can make with your pantry ingredients'
-                                    }
-                                </p>
-                            </div>
-                        ) : loading ? (
-                            <Loading message="Finding matching recipes..." />
-                        ) : matchResults.length > 0 ? (
-                            <>
-                                {/* Results Summary */}
-                                <div className="results-summary">
-                                    <h3>
-                                        Found {matchResults.length} Recipe{matchResults.length !== 1 ? 's' : ''}
-                                    </h3>
-                                    {summary && (
-                                        <div className="summary-badges">
-                                            {summary.perfectMatches > 0 && (
-                                                <span className="summary-badge perfect">
-                                                    ✨ {summary.perfectMatches} perfect match{summary.perfectMatches !== 1 ? 'es' : ''}
-                                                </span>
-                                            )}
-                                            {summary.highMatches > 0 && (
-                                                <span className="summary-badge high">
-                                                    🎯 {summary.highMatches} high match{summary.highMatches !== 1 ? 'es' : ''}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Results Grid */}
-                                <div className="match-results-grid">
-                                    {matchResults.map(recipe => (
-                                        <MatchResultCard
-                                            key={recipe.id}
-                                            recipe={recipe}
-                                            onFavoriteToggle={handleFavoriteToggle}
-                                        />
-                                    ))}
-                                </div>
-                            </>
-                        ) : (
-                            <EmptyState
-                                icon="🔍"
-                                title="No matching recipes found"
-                                message="Try selecting different ingredients or adjusting the filters"
-                                actionText="Clear Filters"
-                                onAction={() => {
-                                    setMinMatch(0);
-                                    setDifficulty('');
-                                    setMaxMissing('');
-                                }}
-                            />
-                        )}
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );
