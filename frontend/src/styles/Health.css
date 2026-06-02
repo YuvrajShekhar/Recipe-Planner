@@ -1263,3 +1263,228 @@
   .analytics-stat { min-width: 48%; border-right: none; border-bottom: 1px solid #e8e8e8; padding: 8px 0; }
   .analytics-stat:nth-child(3), .analytics-stat:nth-child(4) { border-bottom: none; }
 }
+
+/* ==================== QUICK MEAL BUILDER ==================== */
+
+.quick-meal-entry {
+  border-left: 4px solid #48bb78;
+}
+
+.quick-meal-subtitle {
+  font-size: 0.85rem;
+  color: #718096;
+  margin: -0.5rem 0 1rem 0;
+}
+
+.meal-name-input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+.meal-name-input:focus {
+  outline: none;
+  border-color: #48bb78;
+}
+
+/* Live macro summary bar */
+.quick-meal-macro-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #f0fff4, #e6fffa);
+  border: 1.5px solid #9ae6b4;
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.qm-macro-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #276749;
+  margin-right: 0.2rem;
+}
+
+.qm-macro-incomplete {
+  font-size: 0.78rem;
+  color: #d69e2e;
+  margin-left: auto;
+}
+
+/* Section label */
+.qm-section-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin: 0 0 0.5rem 0;
+}
+
+/* Added ingredients list */
+.quick-meal-ingredients {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.quick-meal-ingredient-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #edf2f7;
+}
+.quick-meal-ingredient-row:last-child {
+  border-bottom: none;
+}
+
+.qm-ing-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3748;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qm-qty-input {
+  width: 64px;
+  padding: 0.3rem 0.4rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.qm-qty-input::-webkit-outer-spin-button,
+.qm-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.qm-qty-input:focus { outline: none; border-color: #48bb78; }
+
+.qm-unit-input {
+  width: 72px;
+  padding: 0.3rem 0.4rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  text-align: center;
+}
+.qm-unit-input:focus { outline: none; border-color: #48bb78; }
+
+.qm-item-kcal {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f6ad55;
+  min-width: 56px;
+  text-align: right;
+}
+.qm-item-kcal.no-data {
+  color: #cbd5e0;
+}
+
+.qm-remove-btn {
+  background: none;
+  border: none;
+  color: #fc8181;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+.qm-remove-btn:hover { color: #e53e3e; }
+
+/* Ingredient picker area */
+.quick-meal-picker {
+  margin-bottom: 1rem;
+}
+
+.qm-pantry-list {
+  margin-top: 0.4rem;
+}
+
+.qm-pick-arrow {
+  color: #a0aec0;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Staging area */
+.qm-staging-area {
+  background: #f0fff4;
+  border: 2px solid #9ae6b4;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 0.4rem;
+}
+
+.qm-staging-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.qm-staging-header strong {
+  font-size: 1rem;
+  color: #22543d;
+}
+
+.qm-staging-available {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.qm-staging-inputs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.qm-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.qm-input-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.qm-unit-text-input {
+  width: 100px;
+  padding: 0.3rem 0.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.qm-unit-text-input:focus { outline: none; border-color: #48bb78; }
+
+.qm-staging-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+/* Quick Meal button in choice modal */
+.choice-btn.quickmeal-choice:hover {
+  border-color: #48bb78;
+  background: #f0fff4;
+}
+
+@media (max-width: 600px) {
+  .qm-staging-inputs { flex-direction: column; gap: 0.5rem; }
+  .quick-meal-macro-bar { font-size: 0.82rem; }
+}

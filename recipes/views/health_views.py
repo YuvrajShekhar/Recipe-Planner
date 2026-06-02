@@ -6,7 +6,7 @@ from django.db.models import Sum
 from datetime import datetime, date
 from decimal import Decimal
 
-from ..models import DailyNutritionLog
+from ..models import DailyNutritionLog, Pantry, IngredientNutrition
 from ..serializers import DailyNutritionLogSerializer, DailyNutritionSummarySerializer
 
 
@@ -231,3 +231,149 @@ def nutrition_monthly_summary(request):
         'year': year,
         'daily_summaries': serializer.data
     })
+
+
+def _convert_to_grams_quick(quantity, unit, nutrition):
+    """Convert a quantity+unit to grams using the ingredient's nutrition conversion data."""
+    unit = unit.lower().strip()
+    if unit in ['g', 'gram', 'grams']:
+        return quantity
+    if unit in ['kg', 'kilogram', 'kilograms']:
+        return quantity * 1000
+    if unit in ['piece', 'pieces', 'pcs', 'pc', 'whole', 'unit', 'units']:
+        if nutrition.gram_equivalent_per_piece:
+            return quantity * nutrition.gram_equivalent_per_piece
+    if unit in ['cup', 'cups']:
+        if nutrition.gram_equivalent_per_cup:
+            return quantity * nutrition.gram_equivalent_per_cup
+    if unit in ['tbsp', 'tablespoon', 'tablespoons']:
+        if nutrition.gram_equivalent_per_tbsp:
+            return quantity * nutrition.gram_equivalent_per_tbsp
+    if unit in ['tsp', 'teaspoon', 'teaspoons']:
+        if nutrition.gram_equivalent_per_tsp:
+            return quantity * nutrition.gram_equivalent_per_tsp
+    if unit in ['ml', 'milliliter', 'milliliters']:
+        return quantity
+    if unit in ['l', 'liter', 'liters']:
+        return quantity * 1000
+    return None
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def quick_meal_log(request):
+    """
+    Log a quick ad-hoc meal built from pantry ingredients.
+
+    POST /api/health/quick-meal/
+    {
+        "meal_name": "Egg sandwich",
+        "date": "2026-06-01",
+        "notes": "",
+        "ingredients": [
+            {"pantry_item_id": 5, "ingredient_id": 3, "quantity": 1, "unit": "pieces"},
+            {"pantry_item_id": 12, "ingredient_id": 8, "quantity": 3, "unit": "pieces"}
+        ]
+    }
+
+    Calculates macros from ingredient nutrition data, creates a DailyNutritionLog entry,
+    and deducts the used quantities from the user's pantry.
+    """
+    meal_name = request.data.get('meal_name', '').strip()
+    date_str = request.data.get('date')
+    notes = request.data.get('notes', '')
+    ingredients_data = request.data.get('ingredients', [])
+
+    if not meal_name:
+        return Response({'error': 'meal_name is required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not date_str:
+        return Response({'error': 'date is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        log_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return Response({'error': 'Invalid date format. Use YYYY-MM-DD'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if log_date > date.today():
+        return Response({'error': 'Cannot log food for future dates'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not ingredients_data:
+        return Response({'error': 'At least one ingredient is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    total_calories = Decimal('0')
+    total_protein = Decimal('0')
+    total_carbs = Decimal('0')
+    total_fat = Decimal('0')
+    total_fiber = Decimal('0')
+    warnings = []
+    pantry_updates = []
+
+    for item in ingredients_data:
+        pantry_item_id = item.get('pantry_item_id')
+        ingredient_id = item.get('ingredient_id')
+        quantity = item.get('quantity')
+        unit = str(item.get('unit', '')).strip()
+
+        if not ingredient_id or quantity is None:
+            warnings.append('Skipped an item: missing ingredient_id or quantity')
+            continue
+
+        qty = Decimal(str(quantity))
+
+        try:
+            nutrition = IngredientNutrition.objects.get(ingredient_id=ingredient_id)
+        except IngredientNutrition.DoesNotExist:
+            warnings.append(f'No nutrition data for ingredient {ingredient_id} — macros excluded')
+            # Still deduct from pantry even without nutrition data
+        else:
+            if nutrition.unit_type == 'per_unit':
+                total_calories += (nutrition.calories_per_unit or Decimal('0')) * qty
+                total_protein  += (nutrition.protein_per_unit  or Decimal('0')) * qty
+                total_carbs    += (nutrition.carbs_per_unit    or Decimal('0')) * qty
+                total_fat      += (nutrition.fat_per_unit      or Decimal('0')) * qty
+                total_fiber    += (nutrition.fiber_per_unit    or Decimal('0')) * qty
+            else:
+                grams = _convert_to_grams_quick(qty, unit, nutrition)
+                if grams:
+                    m = grams / Decimal('100')
+                    total_calories += (nutrition.calories_per_100g or Decimal('0')) * m
+                    total_protein  += (nutrition.protein_per_100g  or Decimal('0')) * m
+                    total_carbs    += (nutrition.carbs_per_100g    or Decimal('0')) * m
+                    total_fat      += (nutrition.fat_per_100g      or Decimal('0')) * m
+                    total_fiber    += (nutrition.fiber_per_100g    or Decimal('0')) * m
+                else:
+                    warnings.append(f"Could not convert '{unit}' to grams for ingredient {ingredient_id}")
+
+        # Deduct from pantry
+        if pantry_item_id:
+            try:
+                pantry_item = Pantry.objects.get(pk=pantry_item_id, user=request.user)
+                if pantry_item.quantity is not None:
+                    new_qty = max(Decimal('0'), pantry_item.quantity - qty)
+                    pantry_item.quantity = new_qty
+                    pantry_item.save()
+                    pantry_updates.append({
+                        'ingredient': pantry_item.ingredient.name,
+                        'used': float(qty),
+                        'remaining': float(new_qty),
+                    })
+            except Pantry.DoesNotExist:
+                warnings.append(f'Pantry item {pantry_item_id} not found — skipping deduction')
+
+    log = DailyNutritionLog.objects.create(
+        user=request.user,
+        date=log_date,
+        dish_name=meal_name,
+        calories=round(total_calories, 2),
+        protein=round(total_protein, 2),
+        carbs=round(total_carbs, 2),
+        fat=round(total_fat, 2),
+        fiber=round(total_fiber, 2),
+        notes=notes,
+    )
+
+    return Response({
+        'log': DailyNutritionLogSerializer(log).data,
+        'pantry_updates': pantry_updates,
+        'warnings': warnings,
+    }, status=status.HTTP_201_CREATED)

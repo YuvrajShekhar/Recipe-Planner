@@ -72,6 +72,7 @@ from .health_views import (
     nutrition_log_detail,
     nutrition_daily_summary,
     nutrition_monthly_summary,
+    quick_meal_log,
 )
 
 from .fitness_views import (

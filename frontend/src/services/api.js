@@ -137,6 +137,9 @@ export const healthAPI = {
 
     // Get monthly summary (all days in a month)
     getMonthlySummary: (month, year) => API.get('/health/monthly-summary/', { params: { month, year } }),
+
+    // Log a quick ad-hoc meal from pantry ingredients (also deducts pantry quantities)
+    quickMeal: (data) => API.post('/health/quick-meal/', data),
 };
 
 // ==================== FITNESS APIs ====================

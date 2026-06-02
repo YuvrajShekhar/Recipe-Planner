@@ -74,6 +74,7 @@ urlpatterns = [
     path('health/logs/<int:pk>/', views.nutrition_log_detail, name='nutrition-log-detail'),
     path('health/daily-summary/', views.nutrition_daily_summary, name='nutrition-daily-summary'),
     path('health/monthly-summary/', views.nutrition_monthly_summary, name='nutrition-monthly-summary'),
+    path('health/quick-meal/', views.quick_meal_log, name='quick-meal-log'),
 
     # Activity endpoints
     path('fitness/activities/', views.activity_log_list, name='activity-log-list'),

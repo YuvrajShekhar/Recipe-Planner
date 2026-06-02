@@ -10,13 +10,14 @@ import RecipeFoodEntry from '../components/health/RecipeFoodEntry';
 import FridgeFoodEntry from '../components/health/FridgeFoodEntry';
 import BarcodeScanner from '../components/health/BarcodeScanner';
 import FoodItemEntry from '../components/health/FoodItemEntry';
+import QuickMealEntry from '../components/health/QuickMealEntry';
 import '../styles/Health.css';
 
 const Health = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [dailySummary, setDailySummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState({});
-  // addMode: null | 'manual' | 'recipe' | 'fridge' | 'scan' | 'foods'
+  // addMode: null | 'manual' | 'recipe' | 'fridge' | 'scan' | 'foods' | 'quickmeal'
   const [addMode, setAddMode] = useState(null);
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -83,6 +84,28 @@ const Health = () => {
   const handleCancelAdd = () => {
     setAddMode(null);
     setShowChoiceModal(false);
+  };
+
+  // Handle Quick Meal submission
+  const handleQuickMeal = async (mealData) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await healthAPI.quickMeal(mealData);
+
+      await fetchDailySummary(selectedDate);
+      await fetchMonthlyData(selectedDate);
+
+      setAddMode(null);
+      alert('Quick meal logged and pantry updated!');
+    } catch (err) {
+      console.error('Error logging quick meal:', err);
+      const msg = err.response?.data?.error || 'Failed to log quick meal';
+      setError(msg);
+      alert(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle adding new food entry (used by manual form and recipe picker)
@@ -234,6 +257,14 @@ const Health = () => {
               />
             )}
 
+            {addMode === 'quickmeal' && (
+              <QuickMealEntry
+                onSubmit={handleQuickMeal}
+                onCancel={handleCancelAdd}
+                selectedDate={selectedDate}
+              />
+            )}
+
             {showChoiceModal && (
               <AddFoodChoiceModal
                 onChooseManual={() => { setShowChoiceModal(false); setAddMode('manual'); }}
@@ -241,6 +272,7 @@ const Health = () => {
                 onChooseFridge={() => { setShowChoiceModal(false); setAddMode('fridge'); }}
                 onChooseScan={() => { setShowChoiceModal(false); setAddMode('scan'); }}
                 onChooseFoods={() => { setShowChoiceModal(false); setAddMode('foods'); }}
+                onChooseQuickMeal={() => { setShowChoiceModal(false); setAddMode('quickmeal'); }}
                 onCancel={() => setShowChoiceModal(false)}
               />
             )}
