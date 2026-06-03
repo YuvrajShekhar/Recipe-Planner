@@ -17,6 +17,7 @@ class Ingredient(models.Model):
         ('spice', 'Spice'),
         ('condiment', 'Condiment'),
         ('fat', 'Fat'),
+        ('nut', 'Nut'),
         ('other', 'Other'),
     ]
     
