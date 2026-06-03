@@ -12,8 +12,11 @@ class Ingredient(models.Model):
         ('seafood', 'Seafood'),
         ('dairy', 'Dairy'),
         ('grain', 'Grain'),
+        ('lentils', 'Lentils'),
+        ('flour', 'Flour'),
         ('spice', 'Spice'),
         ('condiment', 'Condiment'),
+        ('fat', 'Fat'),
         ('other', 'Other'),
     ]
     
